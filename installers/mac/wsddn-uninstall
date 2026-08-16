@@ -24,10 +24,10 @@ rm -f /etc/wsddn.conf.sample
 rm -rf '/Library/Application Support/wsdd-native'
 
 if dscl . -read /Users/_wsddn > /dev/null 2>&1; then
-    dscl . -delete /Users/_wsddn 
+    dscl . -delete /Users/_wsddn
 fi
 if dscl . -read /Groups/_wsddn > /dev/null 2>&1; then
-    dscl . -delete /Groups/_wsddn 
+    dscl . -delete /Groups/_wsddn
 fi
 
 if pkgutil --pkgs=io.github.gershnik.wsddn > /dev/null; then

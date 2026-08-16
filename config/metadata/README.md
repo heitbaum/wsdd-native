@@ -2,13 +2,13 @@
 
 The WS-Discovery protocol tells Windows what kind of device it is exposing by sending over "metadata" - essentially an XML document containing information about the computer.
 
-By default, **wsdd-native** sends metadata describing the host it is running on as an SMB server. It is possible to change that by authoring your own metadata and telling **wsdd-native** to use that instead. 
+By default, **wsdd-native** sends metadata describing the host it is running on as an SMB server. It is possible to change that by authoring your own metadata and telling **wsdd-native** to use that instead.
 
 To do so, you need to use the `--metadata PATH` (or `-m PATH`) command-line switch or put `metadata="path"` in the `wsddn.conf` file.
 
 ## Format
 
-Custom metadata must be a valid, well-formed, standalone XML file. All namespaces you use must be fully declared. 
+Custom metadata must be a valid, well-formed, standalone XML file. All namespaces you use must be fully declared.
 
 ### General form
 
@@ -16,7 +16,7 @@ The general form of the metadata is as follows. For more details, see [this obsc
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<wsx:Metadata 
+<wsx:Metadata
     xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
     xmlns:wsdp="http://schemas.xmlsoap.org/ws/2006/02/devprof"
     xmlns:pnpx="http://schemas.microsoft.com/windows/pnpx/2005/10" >
@@ -53,7 +53,7 @@ The rules for placeholders are as follows:
 * `$$` is replaced with a single `$`.
 * The following placeholders are currently defined:
 
-| Placeholder           | Meaning 
+| Placeholder           | Meaning
 |-----------------------|--------
 | $ENDPOINT_ID          | Replaced with the URN in the form urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, where the UUID is the identifier of the host. It is auto-generated or supplied via the `--uuid` option.
 | $IP_ADDR              | The IP address of the interface on which the metadata is being sent. This allows you to create URLs that operate on the same network that Windows "sees" your machine on.
@@ -64,9 +64,9 @@ The rules for placeholders are as follows:
 
 ### Examples
 
-This directory contains some examples that might help you author your own metadata. 
+This directory contains some examples that might help you author your own metadata.
 
-The [default.xml](default.xml) file contains an equivalent of what **wsdd-native** sends by default with no custom metadata. This is the standard metadata of an SMB host. 
+The [default.xml](default.xml) file contains an equivalent of what **wsdd-native** sends by default with no custom metadata. This is the standard metadata of an SMB host.
 
 The [other.xml](other.xml) file contains an example of a simple HTTP server. When you click on it in Windows Explorer, the browser would open pointing to that host. Where it points to is actually controlled by the line
 

@@ -57,7 +57,7 @@ if (NOT HAVE_NETLINK)
     if (NOT HAVE_SYSCTL_PF_ROUTE AND NOT HAVE_SIOCGLIFCONF AND NOT HAVE_SIOCGIFCONF)
         message(FATAL_ERROR [=[
 Neither one of:
- - netlink 
+ - netlink
  - sysctl(CTL_NET, PF_ROUTE)
  - ioctl(SIOCGLIFCONF)
  - ioctl(SIOCGIFCONF)
@@ -129,18 +129,18 @@ PRIVATE
     "$<$<PLATFORM_ID:SunOS>:socket>"
 
     "$<$<PLATFORM_ID:Haiku>:-lnetwork>"
-    
+
     "$<$<BOOL:${HAVE_EXECINFO_LIB}>:execinfo>"
 )
 
-target_compile_options(wsddn 
+target_compile_options(wsddn
 PRIVATE
     $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-ftemplate-backtrace-limit=0>
     $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-fpch-instantiate-templates;-ftemplate-backtrace-limit=0>
-    $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic>   
+    $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic>
 )
 
-target_link_options(wsddn 
+target_link_options(wsddn
 PRIVATE
     "$<$<CXX_COMPILER_ID:AppleClang>:-Wl,-object_path_lto,${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lto.o>"
     "$<$<CXX_COMPILER_ID:AppleClang>:-Wl,-cache_path_lto,${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/LTOCache>"
@@ -165,11 +165,11 @@ PRIVATE
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND
    CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13 AND
    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
-    
+
    target_compile_options(wsddn PRIVATE -include "${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h")
 else()
     target_precompile_headers(wsddn
-    PRIVATE 
+    PRIVATE
         src/pch.h
     )
 endif()
@@ -249,13 +249,13 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS src/sys_config.h.
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     configure_file(src/Info.template.plist Info.plist @ONLY)
 
-    target_link_options(wsddn 
-    PRIVATE 
+    target_link_options(wsddn
+    PRIVATE
         LINKER:-sectcreate,__TEXT,__info_plist,${CMAKE_CURRENT_BINARY_DIR}/Info.plist
     )
 
     set_target_properties(wsddn PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
-    
+
     if (CMAKE_GENERATOR MATCHES "Xcode")
         set_target_properties(wsddn PROPERTIES
             XCODE_ATTRIBUTE_INFOPLIST_FILE ${CMAKE_CURRENT_BINARY_DIR}/Info.plist
@@ -299,7 +299,7 @@ if (ASCIIDOCTOR_PATH)
 endif()
 
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND 
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND
     NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
     NOT WSDDN_MACOS_SUPPRESS_WRAPPER)
 

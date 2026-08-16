@@ -11,7 +11,7 @@ The following versions are currently being supported with security updates.
 
 ## Reporting a Vulnerability
 
-Please report privately using Github tools 
+Please report privately using Github tools
 ([How to guide](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability))
 
 You should expect a reply to any vulnerability related communication within 1 business day (USA).

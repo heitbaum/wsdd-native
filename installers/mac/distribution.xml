@@ -37,7 +37,7 @@
             if (typeof(my.result) != 'undefined') {{
                 my.result.type = 'Fatal';
                 my.result.title = 'Incompatible Software Found';
-                my.result.message = 
+                my.result.message =
                     "It appears that Macports version of WS-Discovery Host Daemon is installed on your machine. "+
                     "Having two versions of this software at the same time may result in an unpredicatble behavior. "+
                     "You can uninstall the Macports version via\nsudo port uninstall wsddn";

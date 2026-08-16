@@ -66,7 +66,7 @@ copyTemplated(mydir.parent / 'wsddn.conf', stagedir / 'etc/wsddn.conf.sample', {
 })
 
 copyTemplated(mydir / 'distribution.xml', workdir / 'distribution.xml', {
-    'IDENTIFIER':IDENTIFIER, 
+    'IDENTIFIER':IDENTIFIER,
     'VERSION': VERSION
 })
 
@@ -96,8 +96,8 @@ for to_sign in things_to_sign:
 packagesdir = workdir / 'packages'
 packagesdir.mkdir()
 
-subprocess.run(['pkgbuild', 
-                '--analyze', 
+subprocess.run(['pkgbuild',
+                '--analyze',
                 '--root', str(stagedir),
                 str(packagesdir/'component.plist')
             ], check=True)
@@ -107,17 +107,17 @@ for component in components:
     component['BundleIsRelocatable'] = False
 with open(packagesdir/'component.plist', "wb") as dest:
     plistlib.dump(components, dest, fmt=plistlib.FMT_XML)
-subprocess.run(['pkgbuild', 
-                '--root',       str(stagedir), 
+subprocess.run(['pkgbuild',
+                '--root',       str(stagedir),
                 '--component-plist', str(packagesdir/'component.plist'),
                 '--scripts',    str(mydir / 'scripts'),
-                '--identifier', IDENTIFIER, 
+                '--identifier', IDENTIFIER,
                 '--version',    VERSION,
                 '--ownership',  'recommended',
                 str(packagesdir/'output.pkg')
             ], check=True)
 
-subprocess.run(['productbuild', 
+subprocess.run(['productbuild',
                 '--distribution', workdir / 'distribution.xml',
                 '--package-path', str(packagesdir),
                 '--resources',    str(mydir / 'html'),
@@ -131,7 +131,7 @@ if args.sign:
     subprocess.run(['productsign', '--sign', 'Developer ID Installer', workdir / 'wsddn.pkg', installer], check=True)
     pattern = re.compile(r'^\s*1. Developer ID Installer: .*\(([0-9A-Z]{10})\)$')
     teamId = None
-    for line in subprocess.run(['pkgutil', '--check-signature', installer], 
+    for line in subprocess.run(['pkgutil', '--check-signature', installer],
                                check=True, stdout=subprocess.PIPE).stdout.decode('utf-8').splitlines():
         m = pattern.match(line)
         if m:
@@ -140,7 +140,7 @@ if args.sign:
     if teamId is None:
         print('Unable to find team ID from signature', file=sys.stderr)
         sys.exit(1)
-    subprocess.run([mydir / 'notarize', '--user', os.environ['NOTARIZE_USER'], '--password', os.environ['NOTARIZE_PWD'], 
+    subprocess.run([mydir / 'notarize', '--user', os.environ['NOTARIZE_USER'], '--password', os.environ['NOTARIZE_PWD'],
                     '--team', teamId, installer], check=True)
     print('Signature Info')
     res1 = subprocess.run(['pkgutil', '--check-signature', installer], check=False)
@@ -150,12 +150,12 @@ if args.sign:
         sys.exit(1)
 
 if args.uploadResults:
-    subprocess.run(['tar', '-C', builddir, '-czf', 
+    subprocess.run(['tar', '-C', builddir, '-czf',
                     workdir.absolute() / f'wsddn-macos-{VERSION}.dSYM.tgz', 'wsddn.dSYM'], check=True)
-    subprocess.run(['tar', '-C', builddir / 'wrapper', '-czf', 
+    subprocess.run(['tar', '-C', builddir / 'wrapper', '-czf',
                     workdir.absolute() / f'wsdd-native-macos-{VERSION}.app.dSYM.tgz', 'wsdd-native.app.dSYM'], check=True)
-    subprocess.run(['aws', 's3', 'cp', 
+    subprocess.run(['aws', 's3', 'cp',
                     workdir / f'wsddn-macos-{VERSION}.dSYM.tgz', 's3://wsddn-symbols/'], check=True)
-    subprocess.run(['aws', 's3', 'cp', 
+    subprocess.run(['aws', 's3', 'cp',
                     workdir / f'wsdd-native-macos-{VERSION}.app.dSYM.tgz', 's3://wsddn-symbols/'], check=True)
     subprocess.run(['gh', 'release', 'upload', f'v{VERSION}', installer], check=True)

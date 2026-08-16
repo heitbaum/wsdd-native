@@ -19,11 +19,11 @@ public:
 public:
     virtual void start() = 0;
     virtual void stop(bool graceful) = 0;
-    
+
     auto state() const -> State {
         return m_state;
     }
-    
+
     auto interface() const -> const NetworkInterface & {
         return m_interface;
     }
@@ -32,10 +32,10 @@ protected:
     }
     virtual ~WsdServer() noexcept {
     }
-    
+
 protected:
     const NetworkInterface m_interface;
-    
+
     State m_state = NotStarted;
 };
 
@@ -50,4 +50,4 @@ using WsdServerFactory = std::function<WsdServerFactoryT>;
 WsdServerFactoryT createWsdServer;
 
 
-#endif 
+#endif

@@ -28,7 +28,7 @@ protected:
     UdpServer() {
     }
     virtual ~UdpServer() noexcept {
-    }    
+    }
 };
 
 using UdpServerFactoryT = auto (asio::io_context & ctxt,

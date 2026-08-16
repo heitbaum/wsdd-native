@@ -85,7 +85,7 @@ static auto paramsFromSmbConf(const std::filesystem::path & path) -> std::option
     ptl::MemoryMap bytes(nullptr, st.st_size, PROT_READ, MAP_PRIVATE, c_fd(file), 0, ec);
     if (ec)
         return {};
-    
+
 
     WSDLOG_TRACE("reading smb.conf");
 
@@ -96,7 +96,7 @@ static auto paramsFromSmbConf(const std::filesystem::path & path) -> std::option
 
     Config::SambaParams ret;
     bool inGlobalSection = false;
-    
+
     auto processed_end = content.begin();
     for(auto cur = processed_end, end = content.end(); cur != end; ) {
 
@@ -191,9 +191,9 @@ auto paramsFromTestParm() -> std::optional<Config::SambaParams> {
 }
 
 auto Config::sambaParamsToWinNetInfo(const SambaParams & params, bool useNetbiosHostName) -> WinNetInfo {
-    
+
     bool isDomain = (params.security == S("domain") || params.security == S("ads"));
-    
+
     WinNetInfo ret;
 
     if (params.workgroup && !params.workgroup->empty()) {
@@ -228,7 +228,7 @@ auto Config::sambaParamsToWinNetInfo(const SambaParams & params, bool useNetbios
         ret.hostDescription = m_simpleHostName;
     }
 
-    
+
     return ret;
 }
 
@@ -236,7 +236,7 @@ auto Config::detectWinNetInfo(std::optional<std::filesystem::path> smbConf, bool
 
     if (!smbConf)
         smbConf = findSmbConf();
-    
+
     std::optional<Config::SambaParams> params;
     if (smbConf)
         params = paramsFromSmbConf(*smbConf);

@@ -68,7 +68,7 @@ copyTemplated(mydir.parent / 'wsddn.conf', stagedir / 'usr/local/etc/wsddn.conf.
     'RELOAD_INSTRUCTIONS': """
 # sudo service wsddn reload
 # or
-# sudo kill -HUP $(</var/run/wsddn/wsddn.pid)  
+# sudo kill -HUP $(</var/run/wsddn/wsddn.pid)
 """.lstrip()
 })
 
@@ -81,7 +81,7 @@ origin: sysutils/wsddn
 maintainer: Eugene Gershnik <gershnik@hotmail.com>
 www: https://github.com/gershnik/wsdd-native
 comment: WS-Discovery Host Daemon
-desc: Allows your  machine to be discovered by Windows 10 and above systems and displayed by their Explorer "Network" views. 
+desc: Allows your  machine to be discovered by Windows 10 and above systems and displayed by their Explorer "Network" views.
 prefix: /
 """.lstrip())
 
@@ -115,5 +115,5 @@ if args.uploadResults:
                    check=True)
 
     shutil.move(workdir / f'wsddn-{VERSION}.pkg', workdir / f'wsddn-{VERSION}-{abiMarker}.pkg')
-    subprocess.run(['gh', 'release', 'upload', f'v{VERSION}', workdir / f'wsddn-{VERSION}-{abiMarker}.pkg'], 
+    subprocess.run(['gh', 'release', 'upload', f'v{VERSION}', workdir / f'wsddn-{VERSION}-{abiMarker}.pkg'],
                    check=True)

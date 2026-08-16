@@ -1,8 +1,8 @@
 name: Build
 
-on: 
+on:
   push:
-    branches: 
+    branches:
       - '*'
       - '*/**'
     paths-ignore:
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: 
+        include:
         - remote_host: debian-11
           installer: deb
         - remote_host: debian-11-arm
@@ -38,7 +38,7 @@ jobs:
           installer: freebsd
         - remote_host: openbsd-7-5
           installer: openbsd
-        
+
     steps:
     - name: Run remote build
       run: |
@@ -55,7 +55,7 @@ jobs:
           mkdir -p out
           echo "::group::AMD64"
           [ -d "out/amd64" ] && tools/uncache out/amd64
-          cmake -S . -B out/amd64 -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+          cmake -S . -B out/amd64 -DCMAKE_BUILD_TYPE=RelWithDebInfo
           installers/freebsd/build.py . out/amd64
           echo "::endgroup::"
 
@@ -67,20 +67,20 @@ jobs:
           echo "::endgroup::"
         elif [[ '${{ matrix.installer }}' == 'openbsd' ]]; then
           [ -d "out" ] && tools/uncache out
-          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo
           installers/openbsd/build.py . out
         else
           [ -d "out" ] && tools/uncache out
-          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo
           installers/${{ matrix.installer }}/build.py --sign . out
         fi
         EOF
 
   mac:
     runs-on: macos-26
-    env: 
+    env:
       DEVELOPER_DIR: /Applications/Xcode_26.2.app
-     
+
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -100,7 +100,7 @@ jobs:
             -DWSDDN_PREFER_SYSTEM_LIBXML2=ON
 
     - name: Build
-      run: |     
+      run: |
         export SIGN_CERTIFICATE='${{ secrets.SIGN_CERTIFICATE }}'
         export SIGN_CERTIFICATE_PWD='${{ secrets.SIGN_CERTIFICATE_PWD }}'
         export KEYCHAIN_PWD='${{ secrets.KEYCHAIN_PWD }}'

@@ -65,7 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----
 
 ## [Asio C++ Library](https://think-async.com/Asio/)
-  
+
 Distributed under Boost Software License
 
 ----
@@ -194,7 +194,7 @@ THE SOFTWARE.
 ```
 ----
 
-## [modern-uuid](https://github.com/gershnik/modern-uuid) 
+## [modern-uuid](https://github.com/gershnik/modern-uuid)
 
 Distributed under BSD 3 Clause License
 
@@ -311,7 +311,7 @@ Distributed under MIT License
 ```
 The MIT License (MIT)
 
-Copyright (c) 2016 Gabi Melman.                                       
+Copyright (c) 2016 Gabi Melman.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

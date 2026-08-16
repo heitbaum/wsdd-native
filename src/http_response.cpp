@@ -92,7 +92,7 @@ static const StatusRecord g_statuses[] = {
 static const char8_t g_crlf[] = { u8'\r', u8'\n' };
 
 static auto findStatusRecord(HttpResponse::Status status) -> const StatusRecord * {
-    auto ptr = std::lower_bound(std::begin(g_statuses), std::end(g_statuses), status, 
+    auto ptr = std::lower_bound(std::begin(g_statuses), std::end(g_statuses), status,
         [] (const StatusRecord & val, HttpResponse::Status st) {
 
         return std::get<0>(val) < st;
@@ -123,7 +123,7 @@ auto HttpResponse::makeStockResponse(Status status) -> HttpResponse {
         ptr = &g_defaultStatusRecord;
     auto content = std::u8string_view(std::get<2>(*ptr), std::char_traits<char8_t>::length(std::get<2>(*ptr)));
     ret.m_content = content;
-    
+
     ret.m_headers.reserve(2);
     ret.addHeader(S("Content-Type"), S("text/html"));
     ret.addHeader(S("Content-Length"), std::to_string(content.size()));
@@ -132,7 +132,7 @@ auto HttpResponse::makeStockResponse(Status status) -> HttpResponse {
 
 auto HttpResponse::makeReply(XmlCharBuffer && xml) -> HttpResponse {
     HttpResponse ret(Ok);
-    
+
     ret.m_headers.reserve(2);
     ret.addHeader(S("Content-Type"), S("application/soap+xml"));
     ret.addHeader(S("Content-Length"), std::to_string(xml.size()));

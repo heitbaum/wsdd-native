@@ -67,21 +67,21 @@ public:
     WSDResponseBuilder() {
     }
 
-    auto setTo(const sys_string & to) -> WSDResponseBuilder & 
+    auto setTo(const sys_string & to) -> WSDResponseBuilder &
         { m_to = to; return *this; }
-    auto setAction(const sys_string & action) -> WSDResponseBuilder & 
+    auto setAction(const sys_string & action) -> WSDResponseBuilder &
         { m_action = action; return *this; }
-    auto setRelatesTo(const sys_string & relatesTo) -> WSDResponseBuilder & 
+    auto setRelatesTo(const sys_string & relatesTo) -> WSDResponseBuilder &
         { m_relatesTo = relatesTo; return *this; }
-    auto setAppSequence(AppSequence && val) -> WSDResponseBuilder & 
+    auto setAppSequence(AppSequence && val) -> WSDResponseBuilder &
         { m_appSequence = std::move(val); return *this; }
 
     template<class T>
-    auto setBody(T && val) -> WSDResponseBuilder & 
-    requires(std::is_assignable_v<BodyType, decltype(std::move(val))> && 
+    auto setBody(T && val) -> WSDResponseBuilder &
+    requires(std::is_assignable_v<BodyType, decltype(std::move(val))> &&
              !std::is_same_v<std::remove_cvref_t<T>, std::monostate>)
         { m_body = std::move(val); return *this; }
-    
+
     auto build() -> std::unique_ptr<XmlDoc> {
         if (!m_to || !m_action || std::holds_alternative<std::monostate>(m_body))
             std::terminate();
@@ -90,7 +90,7 @@ public:
 
         doc->setRootElement(XmlNode::create(nullptr, u8"Envelope"));
         auto envelopeNode = doc->getRootElement();
-        
+
         Namespaces ns = {
             .soap = &envelopeNode->newNs(xml_str(g_soapUri), u8"soap"),
             .wsa  = &envelopeNode->newNs(xml_str(g_wsaUri),  u8"wsa"),
@@ -139,7 +139,7 @@ private:
     void fill(const std::monostate &, XmlNode &, const Namespaces &) {
         std::terminate();
     }
-    
+
     void fill(const Hello & val, XmlNode & bodyNode, const Namespaces & ns) {
         auto & hello = bodyNode.newChild(ns.wsd, u8"Hello");
         addEndpointReference(ns, hello, val.endpointIdentifier);
@@ -147,12 +147,12 @@ private:
         hello.newTextChild(ns.wsd, u8"XAddrs", xml_str(xaddr));
         addMetadataVersion(ns, hello);
     }
-    
+
     void fill(const Bye & val, XmlNode & bodyNode, const Namespaces & ns) {
         auto & bye = bodyNode.newChild(ns.wsd, u8"Bye");
         addEndpointReference(ns, bye, val.endpointIdentifier);
     }
-    
+
     void fill(const ProbeMatch & val, XmlNode & bodyNode, const Namespaces & ns) {
         auto & probeMatches = bodyNode.newChild(ns.wsd, u8"ProbeMatches");
         auto & probeMatch = probeMatches.newChild(ns.wsd, u8"ProbeMatch");
@@ -172,19 +172,19 @@ private:
     }
 
     void fill(const ResponseToGet & val, XmlNode & bodyNode, const Namespaces & ns) {
-        
+
         if (val.metadataTemplate) {
             auto newNode = bodyNode.document()->copyNode(*val.metadataTemplate->getRootElement());
-            
+
             replacePlaceholders(*newNode, val);
-            
+
             bodyNode.addChild(*newNode);
             newNode.release();
-            
+
             xmlReconciliateNs(c_ptr(bodyNode.document()), c_ptr(bodyNode.document()->getRootElement()));
-            
+
         } else {
-            
+
             auto & metadata = bodyNode.newChild(ns.wsx, u8"Metadata");
             {
                 auto & section = metadata.newChild(ns.wsx, u8"MetadataSection");
@@ -215,18 +215,18 @@ private:
             }
         }
     }
-    
+
 private:
     void replacePlaceholders(XmlNode & node, const ResponseToGet & data) {
         replacePlaceholdersInSelf(node, data);
         if (auto child = node.firstChild())
             replacePlaceholdersInSelfSiblingsAndChildren(*child, data);
     }
-    
+
     std::u8string replaceInString(sys_string::char_access & str, const ResponseToGet & data) {
         std::u8string ret;
         ret.reserve(str.size());
-        
+
         auto dest = std::back_inserter(ret);
         auto first = (const char8_t *)str.data();
         auto last = first + str.size();
@@ -275,18 +275,18 @@ private:
         }
         return ret;
     }
-    
+
     void replacePlaceholdersInSelf(XmlNode & node, const ResponseToGet & data) {
         if (node.type() == XML_TEXT_NODE) {
             auto cont = node.getContent();
-            
+
             sys_string::char_access access(cont);
             if (std::find(access.begin(), access.end(), u8'$') == access.end())
                 return;
-            
+
             auto replaced = replaceInString(access, data);
             node.setContent(replaced.c_str());
-            
+
         } else if (node.type() == XML_ELEMENT_NODE) {
             for (auto prop = node.firstProperty(); prop; prop = prop->nextSibling()) {
                 if (prop->firstChild()) {
@@ -295,7 +295,7 @@ private:
             }
         }
     }
-    
+
     void replacePlaceholdersInSelfSiblingsAndChildren(XmlNode & node, const ResponseToGet & data) {
         XmlNode * current = &node;
         XmlNode * end = current->parent();
@@ -303,19 +303,19 @@ private:
         while(current != end) {
             if (!returningFromChild) {
                 replacePlaceholdersInSelf(*current, data);
-                
+
                 if (current->firstChild()) {
                     current = current->firstChild();
                     continue;
                 }
             }
-            
+
             returningFromChild = false;
             if (current->nextSibling()) {
                 current = current->nextSibling();
                 continue;
             }
-            
+
             current = current->parent();
             returningFromChild = true;
         }
@@ -362,11 +362,11 @@ public:
         m_state = Running;
         sendHello();
     }
-    
+
     void stop(bool graceful) override {
         if (m_state == NotStarted)
             std::terminate();
-        
+
         if (m_state == Running) {
             if (graceful) {
                 WSDLOG_INFO("{}: sending Bye", m_serverDesc);
@@ -381,11 +381,11 @@ public:
             }
         }
     }
-    
+
 private:
     ~WsdServerImpl() noexcept {
     }
-    
+
     void onFatalUdpError() override {
         stop(false);
     }
@@ -399,10 +399,10 @@ private:
     auto handleHttpRequest(std::unique_ptr<XmlDoc> doc) -> std::optional<XmlCharBuffer> override  {
         return handleRequest(Http, std::move(doc));
     }
-    
+
     void sendHello() {
         WSDResponseBuilder builder;
-        
+
         builder.setTo(g_wsdUrn);
         builder.setAction(g_wsdUri + S("/Hello"));
         builder.setAppSequence(WSDResponseBuilder::AppSequence{
@@ -414,16 +414,16 @@ private:
             .httpEndpoint = m_httpAddress,
             .httpPath = m_config->httpPath()
         });
-        
+
         auto doc = builder.build();
         auto buf = doc->dump();
         m_udpServer->broadcast(std::move(buf));
     }
-    
+
     void sendBye() {
-        
+
         WSDResponseBuilder builder;
-        
+
         builder.setTo(g_wsdUrn);
         builder.setAction(g_wsdUri + S("/Bye"));
         builder.setAppSequence(WSDResponseBuilder::AppSequence{
@@ -433,25 +433,25 @@ private:
         builder.setBody(WSDResponseBuilder::Bye{
             .endpointIdentifier = m_config->endpointIdentifier()
         });
-        
+
         auto doc = builder.build();
         auto buf = doc->dump();
-        
+
         m_udpServer->broadcast(std::move(buf), [this, holder = refcnt_retain(this)](asio::error_code) {
             stop(false);
         });
     }
-    
+
     auto handleRequest(RequestType type, std::unique_ptr<XmlDoc> doc)  -> std::optional<XmlCharBuffer> {
         auto xpathCtxt = XPathContext::create(*doc);
         xpathCtxt->registerNs(u8"soap", xml_str(g_soapUri));
         xpathCtxt->registerNs(u8"wsa",  xml_str(g_wsaUri));
         xpathCtxt->registerNs(u8"wsd",  xml_str(g_wsdUri));
-        
+
         auto headerNode = xpathCtxt->eval(u8"/soap:Envelope/soap:Header")->firstNode();
         if (!headerNode)
             return std::nullopt;
-        
+
         xpathCtxt->setContextNode(*headerNode);
 
         sys_string messageId = xpathCtxt->eval(u8"string(./wsa:MessageID)")->stringval();
@@ -500,9 +500,9 @@ private:
         auto responseDoc = responseBuilder.build();
         return responseDoc->dump();
     }
-    
+
     auto handleProbe(XmlDoc & doc, XPathContext & xpathCtxt, WSDResponseBuilder & responseBuilder) -> bool {
-        
+
         xpathCtxt.setContextNode(*doc.asNode());
         auto probeNode = xpathCtxt.eval(u8"/soap:Envelope/soap:Body/wsd:Probe")->firstNode();
         if (!probeNode) {
@@ -547,9 +547,9 @@ private:
 
         return true;
     }
-    
+
     auto handleResolve(XmlDoc & doc, XPathContext & xpathCtxt, WSDResponseBuilder & responseBuilder) -> bool {
-        
+
         xpathCtxt.setContextNode(*doc.asNode());
         sys_string resolveAddr = xpathCtxt.eval(u8"string(/soap:Envelope/soap:Body/wsd:Resolve/wsa:EndpointReference/wsa:Address)")->stringval();
         if (resolveAddr.empty()) {
@@ -573,9 +573,9 @@ private:
 
         return true;
     }
-    
+
     auto handleGet(XmlDoc & /*doc*/, XPathContext & /*xpathCtxt*/, WSDResponseBuilder & responseBuilder) -> bool {
-        
+
         responseBuilder.setAction(g_wsdtUri + S("/GetResponse"));
         responseBuilder.setBody(WSDResponseBuilder::ResponseToGet{
             .endpointIdentifier = m_config->endpointIdentifier(),
@@ -599,7 +599,7 @@ private:
         m_knownMessageIdsLRU.push_front(it);
         return true;
     }
-    
+
     static auto buildFullComputerName(Config & config) -> sys_string {
         auto & info = config.winNetInfo();
 
@@ -607,18 +607,18 @@ private:
         fullComputerNameBuilder.append(info.hostName);
         std::visit([&](auto & val) {
             using ArgType = std::remove_cvref_t<decltype(val)>;
-            
+
             if constexpr (std::is_same_v<WindowsWorkgroup, ArgType>)
                 fullComputerNameBuilder.append(u8"/Workgroup:");
             else if constexpr (std::is_same_v<WindowsDomain, ArgType>)
                 fullComputerNameBuilder.append(u8"/Domain:");
             else
                 static_assert(makeDependentOn<ArgType>(false), "unhandled type");
-            
+
             fullComputerNameBuilder.append(val.name);
-            
+
         }, info.memberOf);
-        
+
         return fullComputerNameBuilder.build();
     }
 
@@ -644,6 +644,6 @@ auto createWsdServer(asio::io_context & ctxt,
                      UdpServerFactory udpFactory,
                      const NetworkInterface & iface,
                      const ip::address & addr) -> refcnt_ptr<WsdServer> {
-    
+
     return refcnt_attach(new WsdServerImpl(ctxt, config, httpFactory, udpFactory, iface, addr));
 }

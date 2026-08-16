@@ -58,16 +58,16 @@ public:
     void start(Handler & handler) override {
 
         m_handler = &handler;
-        
+
         WSDLOG_INFO("Starting interface monitor");
 
-#if HAVE_PF_ROUTE    
+#if HAVE_PF_ROUTE
         read();
 #endif
 
         loadInitial();
     }
-    
+
     void stop() override {
         WSDLOG_INFO("Stopping interface monitor");
         m_handler = nullptr;
@@ -117,15 +117,15 @@ private:
                     continue;
                 auto addr6 = (const sockaddr_in6 *)&req.lifr_addr;
                 auto cppAddr = makeAddress(*addr6);
-                if (!cppAddr.is_link_local()) 
-                    continue;    
+                if (!cppAddr.is_link_local())
+                    continue;
                 addr = cppAddr;
             } else {
                 continue;
             }
-            
+
             sys_string name(req.lifr_name);
-            
+
             auto interfaceFlags = ioctlSocket<GetLInterfaceFlags>(m_socket, name).value();
             if (isUnusableInterface(interfaceFlags)) {
                 WSDLOG_DEBUG("Interface {}, addr {} is loopback or doesn't support multicast - ignoring", name, addr.to_string());
@@ -162,7 +162,7 @@ private:
             }
 
             sys_string name(req.ifr_name);
-            
+
             auto interfaceFlags = ioctlSocket<GetInterfaceFlags>(m_socket, name).value();
             if (isUnusableInterface(interfaceFlags)) {
                 WSDLOG_DEBUG("Interface {}, addr {} is loopback or doesn't support multicast - ignoring", name, addr.to_string());
@@ -183,13 +183,13 @@ private:
 
             if (!m_handler)
                 return;
-            
+
             if (ec) {
                 if (ec != asio::error::operation_aborted) {
                     WSDLOG_CRITICAL("error reading from route socket {}", ec.message());
                     m_handler->onFatalInterfaceMonitorError(ec);
                 }
-                
+
                 return;
             }
 
@@ -203,15 +203,15 @@ private:
     }
 
     auto parseTable(const std::byte * first, const std::byte * last, bool sequential) ->  const std::byte * {
-        
+
         std::unordered_map<int, bool> knownIfaces;
         std::optional<NetworkInterface> lastInterface;
         for( ; size_t(last - first) > sizeof(rt_msghdr::rtm_msglen); first += ((const rt_msghdr *)first)->rtm_msglen) {
-            
+
             auto header = (const rt_msghdr *)first;
             if (header->rtm_msglen > size_t(last - first))
                 break;
-            
+
             const std::byte * addrLast = first + header->rtm_msglen;
 
             const std::byte * addrFirst;
@@ -243,14 +243,14 @@ private:
                 else
                     lastInterface = result.iface;
             }
-            
+
             if (result.iface) {
-                
+
                 if (!m_config->isAllowedInterface(result.iface->name)) {
                     WSDLOG_DEBUG("Interface {} is not allowed in configuration - ignoring", *result.iface);
                     continue;
                 }
-                
+
                 if (header->rtm_type == RTM_IFINFO) {
                     knownIfaces[result.iface->index] = isUnusableInterface(interfaceFlags);
                 } else {
@@ -268,12 +268,12 @@ private:
                     }
                 }
             }
-            
+
             if (!result.addr || !result.iface)
                 continue;
-            
+
             handleDetected(header->rtm_type != RTM_DELADDR, *result.iface, *result.addr, knownIfaces);
-            
+
         }
         return first;
     }
@@ -296,7 +296,7 @@ private:
                                 if (m_config->enableIPv6()) {
                                     auto addr6 = (const sockaddr_in6 *)addr;
                                     auto cppAddr = makeAddress(*addr6);
-                                    if (cppAddr.is_link_local()) 
+                                    if (cppAddr.is_link_local())
                                         result.addr.emplace(cppAddr);
                                 }
                             }
@@ -326,23 +326,23 @@ private:
         #endif
         return result;
     }
-    
+
     void handleDetected(bool isAdded, NetworkInterface iface, ip::address addr, const std::unordered_map<int, bool> & knownIfaces) {
-        
+
         if (isAdded) {
-            
+
             bool ignore = true;
             if (auto it = knownIfaces.find(iface.index); it != knownIfaces.end()) {
                 ignore = it->second;
             }
-            
+
             if (!ignore)
                 m_handler->addAddress(iface, addr);
             else
                 WSDLOG_DEBUG("Interface {}, addr {} is loopback or doesn't support multicast - ignoring", iface, addr.to_string());
-            
+
         } else {
-            
+
             m_handler->removeAddress(iface, addr);
         }
     }

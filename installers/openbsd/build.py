@@ -52,7 +52,7 @@ copyTemplated(mydir.parent / 'wsddn.conf', stagedir / 'etc/wsddn/wsddn.conf.samp
     'RELOAD_INSTRUCTIONS': """
 # sudo rcctl reload wsddn
 # or
-# sudo kill -HUP $(</var/run/wsddn.pid)  
+# sudo kill -HUP $(</var/run/wsddn.pid)
 """.lstrip()
 })
 
@@ -70,7 +70,7 @@ for line in iter(ldd_out.splitlines()):
     if not m:
         continue
     libs += ['-W', f'{m.group(1)}.{m.group(2)}']
-    
+
 
 COMMENT = 'WS-Discovery Host Daemon'
 DESC = 'Allows your  machine to be discovered by Windows 10 and above systems and displayed by their Explorer "Network" views.'
@@ -115,20 +115,20 @@ subprocess.run(['pkg_create', '-v',
                      '-D', f'MAINTAINER={MAINTAINER}',
                      '-D', f'HOMEPAGE={HOMEPAGE}',
                      '-B', stagedir.resolve(),
-                     '-p', '/'] + 
+                     '-p', '/'] +
                      libs + [
                      f'wsddn-{VERSION}.tgz'], cwd=workdir, check=True)
-                     
+
 subprocess.run(['gzip', '--keep', '--force', builddir / 'wsddn'], check=True)
 
 if args.uploadResults:
-    subprocess.run(['aws', 's3', 'cp', 
-                    workdir / f'wsddn-{VERSION}.tgz', f's3://gershnik-builds/openbsd/wsddn-{VERSION}-{ARCH}.tgz'], 
+    subprocess.run(['aws', 's3', 'cp',
+                    workdir / f'wsddn-{VERSION}.tgz', f's3://gershnik-builds/openbsd/wsddn-{VERSION}-{ARCH}.tgz'],
                    check=True)
-    subprocess.run(['aws', 's3', 'cp', 
+    subprocess.run(['aws', 's3', 'cp',
                     builddir / 'wsddn.gz', f's3://wsddn-symbols/wsddn-openbsd-{VERSION}-{ARCH}.tgz'], check=True)
-    
+
     shutil.move(workdir / f'wsddn-{VERSION}.tgz', workdir / f'wsddn-{VERSION}-OpenBSD-{ARCH}.tgz')
-    subprocess.run(['gh', 'release', 'upload', f'v{VERSION}', workdir / f'wsddn-{VERSION}-OpenBSD-{ARCH}.tgz'], 
+    subprocess.run(['gh', 'release', 'upload', f'v{VERSION}', workdir / f'wsddn-{VERSION}-OpenBSD-{ARCH}.tgz'],
                    check=True)
-    
+

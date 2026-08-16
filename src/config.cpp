@@ -7,20 +7,20 @@
 Config::Config(const CommandLine & cmdline):
     m_instanceIdentifier(time(nullptr)),
     m_pageSize(size_t(ptl::systemConfig(_SC_PAGESIZE).value_or(4096))) {
-        
+
     m_hopLimit = cmdline.hoplimit.value_or(1);
     m_allowedAddressFamily = cmdline.allowedAddressFamily.value_or(BothIPv4AndIPv6);
     m_interfaceWhitelist.insert(cmdline.interfaces.begin(), cmdline.interfaces.end());
     m_interfacePatternsWhitelist.reserve(cmdline.includePatterns.size());
     for(auto & str: cmdline.includePatterns) {
-        m_interfacePatternsWhitelist.emplace_back(sys_string::char_access(str).c_str(), 
+        m_interfacePatternsWhitelist.emplace_back(sys_string::char_access(str).c_str(),
                                                     std::regex::ECMAScript |
                                                     std::regex::optimize |
                                                     std::regex::nosubs);
     }
     m_interfacePatternsBlacklist.reserve(cmdline.excludePatterns.size());
     for(auto & str: cmdline.excludePatterns) {
-        m_interfacePatternsBlacklist.emplace_back(sys_string::char_access(str).c_str(), 
+        m_interfacePatternsBlacklist.emplace_back(sys_string::char_access(str).c_str(),
                                                     std::regex::ECMAScript |
                                                     std::regex::optimize |
                                                     std::regex::nosubs);
@@ -34,14 +34,14 @@ Config::Config(const CommandLine & cmdline):
         m_uuid = *cmdline.uuid;
     } else {
         using namespace muuid;
-        m_uuid = uuid::generate_sha1(uuid("49DAC291-0608-41C9-941C-ED0E7ACCDE1E"), 
+        m_uuid = uuid::generate_sha1(uuid("49DAC291-0608-41C9-941C-ED0E7ACCDE1E"),
                                      {m_fullHostName.c_str(), m_fullHostName.storage_size()});
     }
     m_strUuid = to_sys_string(m_uuid);
     m_urnUuid = to_urn(m_uuid);
-        
+
     bool useNetbiosHostName = cmdline.hostname && cmdline.hostname->empty();
-        
+
     std::optional<WinNetInfo> systemWinNetInfo;
 #if CAN_HAVE_APPLE_SAMBA
     int darwinVer = darwinMajor();
@@ -53,7 +53,7 @@ Config::Config(const CommandLine & cmdline):
 #else
     systemWinNetInfo = detectWinNetInfo(cmdline.smbConf, useNetbiosHostName);
 #endif
-       
+
     if (cmdline.memberOf) {
         m_winNetInfo.memberOf = *cmdline.memberOf;
     } else if (systemWinNetInfo) {
@@ -61,7 +61,7 @@ Config::Config(const CommandLine & cmdline):
     } else {
         m_winNetInfo.memberOf.emplace<WindowsWorkgroup>(S("WORKGROUP"));
     }
-        
+
     if (cmdline.hostname && !cmdline.hostname->empty()) {
         //explict hostname specified
         m_winNetInfo.hostName = *cmdline.hostname;
@@ -74,31 +74,31 @@ Config::Config(const CommandLine & cmdline):
         else
             m_winNetInfo.hostName = m_simpleHostName;
     }
-        
+
     if (systemWinNetInfo)
         m_winNetInfo.hostDescription = systemWinNetInfo->hostDescription;
-    
+
     if (m_winNetInfo.hostDescription.empty()) {
         if (cmdline.hostname && !cmdline.hostname->empty())
             m_winNetInfo.hostDescription = *cmdline.hostname;
         else
             m_winNetInfo.hostDescription = m_simpleHostName;
     }
-    
-    
+
+
     auto [memberOfType, memberOfName] = std::visit([](auto & val) {
-        
+
         using ArgType = std::remove_cvref_t<decltype(val)>;
-        
+
         if constexpr (std::is_same_v<WindowsWorkgroup, ArgType>)
             return std::make_pair(S("Workgroup"), val.name);
         else if constexpr (std::is_same_v<WindowsDomain, ArgType>)
             return std::make_pair(S("Domain"), val.name);
         else
             static_assert(makeDependentOn<ArgType>(false), "unhandled type");
-        
+
     }, m_winNetInfo.memberOf);
-        
+
     if (cmdline.metadataFile) {
         m_metadataDoc = loadMetadataFile(cmdline.metadataFile->native());
     }
@@ -168,14 +168,14 @@ auto Config::loadMetadataFile(const std::string & filename) const -> std::unique
                 break;
             }
         }
-        
+
         if (!templateParsingCtx->wellFormed())
             throw std::runtime_error(fmt::format("metadata file {} is not well formed XML", filename));
         return templateParsingCtx->extractDoc();
-        
+
     } catch (XmlException & ex) {
         throw std::runtime_error(fmt::format("metadata file {} is not a valid XML", filename));
     }
-    
+
 }
 

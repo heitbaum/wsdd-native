@@ -39,7 +39,7 @@ public:
         addr.nl_groups = RTMGRP_LINK;
         if (m_config->enableIPv4())
             addr.nl_groups |= RTMGRP_IPV4_IFADDR;
-        if (m_config->enableIPv6()) 
+        if (m_config->enableIPv6())
             addr.nl_groups |= RTMGRP_IPV6_IFADDR;
         m_socket.bind(raw_protocol::endpoint(&addr, sizeof(addr)));
     }
@@ -77,18 +77,18 @@ private:
 
     void read() {
         asio::mutable_buffer buffer(m_recvBuffer.data(), m_recvBuffer.size());
-        m_socket.async_receive(buffer, 
+        m_socket.async_receive(buffer,
             [this, holder = refcnt_retain(this)](const asio::error_code & ec, size_t bytesRead){
 
             if (!m_handler)
                 return;
-            
+
             if (ec) {
                 if (ec != asio::error::operation_aborted) {
                     WSDLOG_CRITICAL("error reading from netlink socket {}", ec.message());
                     m_handler->onFatalInterfaceMonitorError(ec);
                 }
-                
+
                 return;
             }
 
@@ -111,7 +111,7 @@ private:
 
     auto parseBuffer(const std::byte * first, const std::byte * last) ->  ParseStatus {
 
-        std::unordered_map<int, bool> knownIfaces; 
+        std::unordered_map<int, bool> knownIfaces;
 
         for(size_t len = 0; size_t(last - first) != 0; first += len) {
 
@@ -121,7 +121,7 @@ private:
             auto cur = first;
             auto header = (const nlmsghdr *)cur;
             len = NLMSG_ALIGN(header->nlmsg_len);
-            if (len > size_t(last - first)) 
+            if (len > size_t(last - first))
                 return BufferTooSmall;
 
             if (len < NLMSG_HDRLEN) {
@@ -155,12 +155,12 @@ private:
             if (msg->ifa_family != AF_INET && msg->ifa_family != AF_INET6)
                 continue;
 
-            
+
             cur += ifaddrmsgSize;
             size_t remaining = last - cur;
 
             auto [addr, iface] = parseRtAttr(msg->ifa_index, msg->ifa_family, cur, remaining);
-            
+
             if (!iface || !addr)
                 continue;
 
@@ -174,7 +174,7 @@ private:
         return ExpectMore;
     }
 
-    auto parseRtAttr(decltype(ifaddrmsg::ifa_index) ifIndex, 
+    auto parseRtAttr(decltype(ifaddrmsg::ifa_index) ifIndex,
                      decltype(ifaddrmsg::ifa_family) addrFamily,
                      const std::byte * ptr, size_t remaining) -> RtParseResult {
 
@@ -214,13 +214,13 @@ private:
                 res.iface.emplace(ifIndex, nameRes.assume_value());
             else
                 WSDLOG_ERROR("Unable to obtain name for interface {0}, {1}", ifIndex, nameRes.assume_error().message());
-        } 
+        }
 
         return res;
     }
 
     void handleDetected(bool isAdded, NetworkInterface iface, ip::address addr, std::unordered_map<int, bool> & knownIfaces) {
-        
+
         if (isAdded) {
             bool ignore = true;
             if (auto it = knownIfaces.find(iface.index); it == knownIfaces.end()) {
@@ -234,7 +234,7 @@ private:
             } else {
                 ignore = it->second;
             }
-                
+
             if (!ignore)
                 m_handler->addAddress(iface, addr);
             else

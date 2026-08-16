@@ -29,10 +29,10 @@ public:
             m_pointers.clear();
         }
     }
-    
+
     template<class OutIt>
     void print(OutIt dest) const {
-        
+
         fmt::format_to(dest, "--------\n");
         for (auto ptr: m_pointers)
         {
@@ -60,7 +60,7 @@ public:
         fmt::format_to(dest, "--------\n");
     }
 private:
-    std::vector<CodePtr> m_pointers; 
+    std::vector<CodePtr> m_pointers;
     static thread_local std::array<CodePtr, 256> s_backtraceBuffer;
 };
 
@@ -70,13 +70,13 @@ thread_local std::vector<Backtrace> g_backtraces;
 
 
 extern "C" {
-    
+
 #if HAVE_ABI_CXA_THROW
     #define CXA_THROW abi::__cxa_throw
 #else
     #define CXA_THROW __cxa_throw
 #endif
-    
+
     [[gnu::noinline]] __attribute__((__visibility__("default"))) __attribute__ ((noreturn))
     void CXA_THROW(void * ex, std::type_info * info, void (*dest)(void *)) {
 
@@ -98,7 +98,7 @@ static void doPrintCaughtExceptionBacktrace(OutIt dest) {
         fmt::format_to(dest, "    <not available>\n");
         return;
     }
-    
+
     const Backtrace & backtrace = g_backtraces[currentIdx];
     backtrace.print(dest);
 }
@@ -109,7 +109,7 @@ auto formatCaughtExceptionBacktrace() -> std::string {
     return ret;
 }
 
-#else 
+#else
 
 auto formatCaughtExceptionBacktrace() -> std::string {
     return "<no backtrace available>";

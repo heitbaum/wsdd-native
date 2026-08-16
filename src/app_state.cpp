@@ -7,7 +7,7 @@ AppState::AppState(int argc, char ** argv, std::set<int> untouchedSignals):
     m_untouchedSignals(std::move(untouchedSignals)),
     m_envColorStatus(Argum::environmentColorStatus()),
     m_mainPid(getpid()) {
-        
+
     m_origCommandLine.parse(argc, argv, m_envColorStatus);
     m_currentCommandLine = m_origCommandLine;
 
@@ -30,20 +30,20 @@ AppState::AppState(int argc, char ** argv, std::set<int> untouchedSignals):
 
 void AppState::reload() {
     if (m_origCommandLine.configFile) {
-        
+
         m_currentCommandLine = m_origCommandLine;
         m_currentCommandLine.mergeConfigFile(*m_origCommandLine.configFile);
         if (!m_isInitialized)
             init();
         else
             refresh();
-        
+
     } else if (!m_isInitialized) {
 
         m_currentCommandLine = m_origCommandLine;
         init();
     }
-    
+
     m_config = Config::make(m_currentCommandLine);
 }
 
@@ -68,7 +68,7 @@ void AppState::init() {
     }
 
     setPidFile();
-    
+
     ensureNonRoot();
 
     m_mainPid = getpid();
@@ -78,11 +78,11 @@ void AppState::init() {
 void AppState::refresh() {
 
     ensureNonRoot();
-    
+
     if (m_currentCommandLine.logLevel != m_logLevel)
         setLogLevel();
-    
-    if ( m_currentCommandLine.logFile != m_logFilePath 
+
+    if ( m_currentCommandLine.logFile != m_logFilePath
 #if HAVE_OS_LOG
         || m_logToOsLog != m_currentCommandLine.logToOsLog
 #endif
@@ -94,9 +94,9 @@ void AppState::refresh() {
 }
 
 void AppState::ensureNonRoot() {
-    if (getuid() != 0) 
+    if (getuid() != 0)
         return;
-        
+
     if (!m_currentCommandLine.runAs) {
         WSDLOG_DEBUG("Running as root but no account to run under is specified in configuration. Using {}", WSDDN_DEFAULT_USER_NAME);
         auto pwd = ptl::Passwd::getByName(WSDDN_DEFAULT_USER_NAME);
@@ -105,7 +105,7 @@ void AppState::ensureNonRoot() {
         } else  {
             WSDLOG_INFO("User {} does not exist, trying to create", WSDDN_DEFAULT_USER_NAME);
             m_currentCommandLine.runAs = Identity::createDaemonUser(WSDDN_DEFAULT_USER_NAME);
-        
+
             if (!m_currentCommandLine.runAs) {
                 WSDLOG_INFO("User creation is not supported on this platform");
                 WSDLOG_CRITICAL("Running network service as a root is extremely insecure and is not allowed.\n"
@@ -134,7 +134,7 @@ void AppState::postForkInServerProcess() noexcept {
     m_savedStdOut.close();
     m_savedStdErr.close();
     m_pidFile = PidFile();
-    
+
     if (m_currentCommandLine.chrootDir) {
         WSDLOG_DEBUG("Changing root directory");
         ptl::changeRoot(*m_currentCommandLine.chrootDir);
@@ -181,7 +181,7 @@ void AppState::setLogOutput(bool firstTime) {
         auto logger = std::make_shared<spdlog::logger>("os_log", std::move(sink));
         spdlog::set_default_logger(logger);
         spdlog::set_pattern("%v");
-    } else 
+    } else
 #endif
     {
         if (m_currentCommandLine.logFile) {
@@ -208,13 +208,13 @@ void AppState::setLogOutput(bool firstTime) {
                 auto logger = spdlog::stdout_logger_st("console");
                 spdlog::set_default_logger(logger);
             }
-            
+
         #if HAVE_SYSTEMD
             if (m_currentCommandLine.daemonType && *m_currentCommandLine.daemonType == DaemonType::Systemd) {
                 auto formatter = std::make_unique<spdlog::pattern_formatter>();
                 formatter->add_flag<SystemdLevelFormatter>('l').set_pattern("%l%v");
                 spdlog::set_formatter(std::move(formatter));
-            } else 
+            } else
         #endif
             {
                 spdlog::set_pattern("%^[%l] %v%$");
@@ -243,7 +243,7 @@ void AppState::setPidFile() {
 }
 
 auto AppState::openLogFile(const std::filesystem::path & filename) -> ptl::FileDescriptor {
-        
+
     std::optional<Identity> owner;
     mode_t mode = S_IRUSR | S_IWUSR;
     mode_t dirMode = mode | S_IXUSR;
@@ -253,7 +253,7 @@ auto AppState::openLogFile(const std::filesystem::path & filename) -> ptl::FileD
         mode |= S_IRGRP;
         dirMode |= S_IRGRP | S_IXGRP;
     }
-    
+
     createMissingDirs(filename.parent_path(), dirMode, owner);
 
     auto fd = ptl::FileDescriptor::open(filename, O_WRONLY | O_CREAT | O_APPEND, mode);
@@ -304,7 +304,7 @@ void AppState::daemonize() {
 
     auto [reportPipeRead, reportPipeWrite] = ptl::Pipe::create();
     char reportBuf[1];
-    
+
 //    auto preserve = std::array{
 //        fileno(stdin),
 //        fileno(stdout),
@@ -321,11 +321,11 @@ void AppState::daemonize() {
     // 1. Close all open file descriptors except standard input, output, and error
     //    This is only meaningfull if you exec - we don't
     //closeAllExcept(preserve.begin(), preserve.end());
-    
+
     // 2. Reset all signal handlers to their default
     for(int sig = 1; sig < NSIG; ++sig) {
         if (!m_untouchedSignals.contains(sig))
-            (void)signal(sig, SIG_DFL); 
+            (void)signal(sig, SIG_DFL);
     }
 
     // 3. Reset the signal mask
@@ -334,7 +334,7 @@ void AppState::daemonize() {
         allSigs.del(sig);
     std::error_code ec;
     ptl::setSignalProcessMask(SIG_UNBLOCK, allSigs.get());
-    
+
     // 4. Sanitize the environment block. Eh...
 
     // 5. Call fork(), to create a background process.
@@ -363,7 +363,7 @@ void AppState::daemonize() {
     // 6. In the child, call setsid() to detach from any terminal and create an independent session.
 
     ptl::setSessionId();
-    
+
     // 7. Call fork() again, to ensure that the daemon can never re-acquire a terminal again.
 
     preFork();
@@ -373,21 +373,21 @@ void AppState::daemonize() {
     //    (the actual daemon process) stays around. This ensures that
     //    the daemon process is re-parented to init/PID 1, as all daemons should be.
 
-    if (childProcess) 
+    if (childProcess)
         exit(EXIT_SUCCESS);
-    
+
     // 8a. Start a new process group. This prevents the initial invoker from killing
-    //     the daemon if it (or somebody) kills the process group 
+    //     the daemon if it (or somebody) kills the process group
     ptl::setProcessGroupId(0, 0);
-    
+
     // 9. Connect /dev/null to standard input, output, and error. ... We are handling output outside of this
     // 10. Reset the umask to 0... We handle it differently
 
-    // 11. Change the current directory to the root directory (/), in order to 
+    // 11. Change the current directory to the root directory (/), in order to
     //     avoid that the daemon involuntarily blocks mount points from being unmounted.
 
     ptl::changeDirectory("/");
-    
+
     // 12. Write the daemon PID to a PID file... We handle it later
     // 13. Drop privileges, if possible and applicable... We handle it later
 

@@ -73,17 +73,17 @@ try:
     print(f'{outdir} contains non-matching existing toolchain: \n{json.dumps(info, indent=4)}\nwill overwrite')
 except FileNotFoundError:
     pass
-    
+
 if outdir.exists():
     shutil.rmtree(outdir)
 outdir.mkdir(parents=True, exist_ok=False)
 
-procCurl = subprocess.Popen(['curl', '-LSs', 
+procCurl = subprocess.Popen(['curl', '-LSs',
                              f'https://download.freebsd.org/ftp/releases/{platform}/{fullVersion}/base.txz'
                         ], stdout=subprocess.PIPE)
-procTar =  subprocess.Popen(['tar', 'Jxf', '-', 
-                             '--include', './usr/include/*', 
-                             '--include', './usr/lib/*', 
+procTar =  subprocess.Popen(['tar', 'Jxf', '-',
+                             '--include', './usr/include/*',
+                             '--include', './usr/lib/*',
                              '--include', './lib/*'
                         ], cwd=outdir, stdin=procCurl.stdout)
 procCurl.stdout.close()

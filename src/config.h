@@ -44,13 +44,13 @@ public:
     auto httpPath() const -> const sys_string &             { return m_strUuid; }
     auto winNetInfo() const -> const WinNetInfo &           { return m_winNetInfo; }
     auto metadataDoc() const -> XmlDoc *                    { return m_metadataDoc.get(); }
-    
+
     auto enableIPv4() const -> bool                         { return m_allowedAddressFamily != IPv6Only; }
     auto enableIPv6() const -> bool                         { return m_allowedAddressFamily != IPv4Only; }
     auto hopLimit() const -> int                            { return m_hopLimit; }
     auto isAllowedInterface(const sys_string & name) const -> bool;
     auto sourcePort() const -> uint16_t                     { return m_sourcePort; }
-    
+
     auto pageSize() const -> size_t                         { return m_pageSize; }
 
 private:
@@ -62,9 +62,9 @@ private:
 #endif
     auto detectWinNetInfo(std::optional<std::filesystem::path> smbConf, bool useNetbiosHostName) -> std::optional<WinNetInfo>;
     auto sambaParamsToWinNetInfo(const SambaParams & params, bool useNetbiosHostName) -> WinNetInfo;
-    
+
     auto getHostName() const -> sys_string;
-    
+
     auto loadMetadataFile(const std::string & filename) const -> std::unique_ptr<XmlDoc>;
 private:
     size_t m_instanceIdentifier;
@@ -75,15 +75,15 @@ private:
     sys_string m_urnUuid;
     WinNetInfo m_winNetInfo;
     std::unique_ptr<XmlDoc> m_metadataDoc;
-    
+
     AllowedAddressFamily m_allowedAddressFamily = BothIPv4AndIPv6;
     int m_hopLimit = 1;
     std::set<sys_string> m_interfaceWhitelist;
     std::vector<std::regex> m_interfacePatternsWhitelist;
     std::vector<std::regex> m_interfacePatternsBlacklist;
     uint16_t m_sourcePort;
-    
+
     size_t m_pageSize;
 };
 
-#endif 
+#endif

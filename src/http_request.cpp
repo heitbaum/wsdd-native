@@ -31,7 +31,7 @@ auto HttpRequest::getContentLength() const -> Outcome<std::optional<size_t>> {
     auto maybeVal = getUniqueHeader(S("Content-Length"));
     if (!maybeVal)
         return maybeVal.assume_error();
-    
+
     auto val = maybeVal.assume_value();
     if (!val)
         return std::nullopt;
@@ -50,7 +50,7 @@ auto HttpRequest::getContentType() const -> Outcome<std::optional<std::vector<sy
     auto maybeVal = getUniqueHeader(S("Content-Type"));
     if (!maybeVal)
         return maybeVal.assume_error();
-    
+
     auto val = maybeVal.assume_value();
 
     if (!val)

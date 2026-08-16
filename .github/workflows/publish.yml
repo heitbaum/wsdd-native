@@ -17,7 +17,7 @@ jobs:
         draft: true
         prerelease: false
         body: ...edit me...
-  
+
   selfhosted:
     concurrency: ${{ matrix.remote_host }}
     runs-on: [self-hosted, server]
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: 
+        include:
         - remote_host: debian-11
           installer: deb
         - remote_host: debian-11-arm
@@ -38,7 +38,7 @@ jobs:
           installer: freebsd
         - remote_host: openbsd-7-5
           installer: openbsd
-        
+
     steps:
     - name: Run remote build
       run: |
@@ -56,7 +56,7 @@ jobs:
           mkdir -p out
           echo "::group::AMD64"
           [ -d "out/amd64" ] && tools/uncache out/amd64
-          cmake -S . -B out/amd64 -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+          cmake -S . -B out/amd64 -DCMAKE_BUILD_TYPE=RelWithDebInfo
           installers/freebsd/build.py --upload-results . out/amd64
           echo "::endgroup::"
 
@@ -68,7 +68,7 @@ jobs:
           echo "::endgroup::"
         else
           [ -d "out" ] && tools/uncache out
-          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo  
+          cmake -S . -B out -DCMAKE_BUILD_TYPE=RelWithDebInfo
           installers/${{ matrix.installer }}/build.py --upload-results . out
         fi
         EOF
@@ -76,9 +76,9 @@ jobs:
   mac:
     runs-on: macos-26
     needs: prepare
-    env: 
+    env:
       DEVELOPER_DIR: /Applications/Xcode_26.2.app
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -103,7 +103,7 @@ jobs:
             "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" \
             -DCMAKE_IGNORE_PREFIX_PATH=/opt/local \
             -DWSDDN_PREFER_SYSTEM_LIBXML2=ON
-          
+
 
     - name: Make Distribution
       env:
@@ -117,6 +117,6 @@ jobs:
         export KEYCHAIN_PWD='${{ secrets.KEYCHAIN_PWD }}'
         export NOTARIZE_USER='${{ secrets.NOTARIZE_USER }}'
         export NOTARIZE_PWD='${{ secrets.NOTARIZE_PWD }}'
-    
+
         installers/mac/set-github-keychain
         installers/mac/build.py --upload-results . out

@@ -35,12 +35,12 @@ private:
         void operator()(void * ptr) const {
             if (ptr)
                 xmlFree(ptr);
-        } 
+        }
     };
     using MemPtr = std::unique_ptr<char8_t, Free>;
 public:
-    XmlCharBuffer(xmlChar * mem, int size): 
-        m_buf(asNative(mem)), 
+    XmlCharBuffer(xmlChar * mem, int size):
+        m_buf(asNative(mem)),
         m_size(size_t(size)) {
     }
 
@@ -73,11 +73,11 @@ struct XmlParserInit {
     WSDDN_IGNORE_DEPRECATED_BEGIN
         xmlSetGenericErrorFunc(nullptr, XmlParserInit::errorFunc);
         xmlThrDefSetGenericErrorFunc(nullptr, XmlParserInit::errorFunc);
-        
+
         xmlSetStructuredErrorFunc(nullptr, XmlParserInit::structuredErrorFunc);
         xmlThrDefSetStructuredErrorFunc(nullptr, XmlParserInit::structuredErrorFunc);
     WSDDN_IGNORE_DEPRECATED_END
-    
+
     }
     ~XmlParserInit() {
         xmlCleanupParser();
@@ -106,7 +106,7 @@ public:
         m_code(err->code) {
 
     }
-    XmlException(xmlParserErrors err): 
+    XmlException(xmlParserErrors err):
         std::runtime_error(fmt::format("XML parser error: {0}", int(err))),
         m_domain(XML_FROM_PARSER),
         m_code(err){
@@ -146,18 +146,18 @@ protected:
 public:
     void operator delete(void *) noexcept
     {}
-    
+
     XmlHandle() = delete;
     XmlHandle(const XmlHandle &) = delete;
     XmlHandle & operator=(const XmlHandle &) = delete;
-    
+
     static Derived * from(T * obj) noexcept
         { return static_cast<Derived *>(obj); }
 
     friend T * c_ptr(const XmlHandle<T, Derived> * obj) noexcept {
-        return const_cast<T *>(static_cast<const T *>(obj)); 
+        return const_cast<T *>(static_cast<const T *>(obj));
     }
-    
+
 protected:
     ~XmlHandle() noexcept
     {}
@@ -196,7 +196,7 @@ public:
             return std::unique_ptr<XmlNode>(ret);
         XmlException::raiseFromLastError();
     }
-    
+
     XmlNs & newNs(const char8_t * href, const char8_t * prefix) {
         if (auto ret = XmlNs::from(xmlNewNs(this, asXml(href), asXml(prefix))))
             return *ret;
@@ -226,15 +226,15 @@ public:
     }
 
     XmlAttr & newAttr(const XmlNs * ns, const char8_t * name, const char8_t * value);
-    
+
     XmlDoc * document() const;
 
     xmlElementType type() const {
         return Wrapped::type;
     }
-    
+
     XmlAttr * firstProperty() const;
-    
+
     XmlNode * firstChild() const
         { return XmlNode::from(this->children); }
     XmlNode * nextSibling() const
@@ -249,7 +249,7 @@ public:
         std::unique_ptr<char8_t, decltype(xmlFree)> holder(chars, xmlFree);
         return sys_string(chars);
     }
-    
+
     void setContent(const char8_t * content);
 };
 
@@ -258,7 +258,7 @@ public:
     ~XmlAttr() {
         xmlFreeProp(this);
     }
-    
+
     XmlNode * firstChild() const
         { return XmlNode::from(this->children); }
     XmlAttr * nextSibling() const
@@ -277,7 +277,7 @@ inline XmlAttr & XmlNode::newAttr(const XmlNs * ns, const char8_t * name, const 
 class XmlDoc : public XmlHandle<xmlDoc, XmlDoc> {
 public:
     ~XmlDoc() {
-        xmlFreeDoc(this); 
+        xmlFreeDoc(this);
     }
 
     static std::unique_ptr<XmlDoc> parseMemory(const void * ptr, int size) {
@@ -286,9 +286,9 @@ public:
         XmlException::raiseFromLastError();
     }
 
-    static std::unique_ptr<XmlDoc> readMemory(const void * ptr, int size, const char * url = nullptr, 
+    static std::unique_ptr<XmlDoc> readMemory(const void * ptr, int size, const char * url = nullptr,
                                               const char * encoding = nullptr, int options = 0) {
-    
+
         if (auto ret = from(xmlReadMemory((const char *)ptr, size, url, encoding, options)))
             return std::unique_ptr<XmlDoc>(ret);
         XmlException::raiseFromLastError();
@@ -322,7 +322,7 @@ public:
         root.release();
         return std::unique_ptr<XmlNode>(ret);
     }
-    
+
     XmlNs * searchNs(XmlNode & node, const char8_t * nameSpace) const {
         auto ret = XmlNs::from(xmlSearchNs(c_ptr(this), c_ptr(&node), asXml(nameSpace)));
         if (!ret) {
@@ -330,8 +330,8 @@ public:
         }
         return ret;
     }
-    
-    
+
+
     std::unique_ptr<XmlNode> copyNode(XmlNode & node) {
         auto ret = XmlNode::from(xmlDocCopyNode(c_ptr(&node), c_ptr(this), 1));
         if (!ret) {
@@ -404,7 +404,7 @@ public:
 class XPathContext : public XmlHandle<xmlXPathContext, XPathContext> {
 public:
     ~XPathContext() {
-        xmlXPathFreeContext(this); 
+        xmlXPathFreeContext(this);
     }
     static std::unique_ptr<XPathContext> create(XmlDoc & doc) {
         if (auto ret = from(xmlXPathNewContext(c_ptr(&doc))))
@@ -448,11 +448,11 @@ public:
 
         auto ret = std::unique_ptr<XmlParserContext>(from(xmlCreatePushParserCtxt(nullptr, nullptr, nullptr, 0, filename)));
         if (!ret)
-            XmlException::raiseFromLastError(); 
+            XmlException::raiseFromLastError();
         if (encoding) {
             ret->encoding = xmlStrdup(asXml(encoding));
             if (!ret->encoding)
-                XmlException::raiseFromLastError(); 
+                XmlException::raiseFromLastError();
         }
         return ret;
     }

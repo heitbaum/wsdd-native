@@ -15,7 +15,7 @@ class Identity {
 public:
     Identity(uid_t uid, gid_t gid) : m_data(uid, gid) {
     }
-    
+
     static auto my() -> Identity {
         return Identity(getuid(), getgid());
     }
@@ -32,7 +32,7 @@ public:
     }
 
     static auto createDaemonUser(const sys_string & name) -> std::optional<Identity>;
-    
+
     void setMyIdentity() const {
         ptl::setGroups({});
         ptl::setGid(gid());
@@ -41,7 +41,7 @@ public:
 
     auto uid() const -> uid_t { return m_data.first; }
     auto gid() const -> gid_t { return m_data.second; }
-    
+
 private:
     std::pair<uid_t, gid_t> m_data;
 };
@@ -99,10 +99,10 @@ public:
 
     class OsLogHandle {
     public:
-        static auto get() noexcept -> os_log_t { 
+        static auto get() noexcept -> os_log_t {
             if (!s_handle)
                 s_handle = os_log_create(WSDDN_BUNDLE_IDENTIFIER, s_category);
-            return s_handle; 
+            return s_handle;
         }
         static void resetInChild() noexcept {
             if (s_handle) {
@@ -148,14 +148,14 @@ public:
 
 inline void createMissingDirs(const std::filesystem::path & path, mode_t mode,
                               std::optional<Identity> owner) {
-    
+
     auto absPath = absolute(path);
     auto start = absPath.root_path();
-    
+
     auto it = absPath.begin();
     std::advance(it, std::distance(start.begin(), start.end()));
     for(auto end = absPath.end(); it != end; ++it) {
-        
+
         start /= *it;
         //we need this check because makeDirectory might fail with things
         //other than EEXIST like permissions
@@ -189,7 +189,7 @@ public:
             auto read_count = ptl::readFile(fd, buf.data() + offset, addition);
             buf.resize(offset + read_count);
             bool done = (read_count == 0);
-            
+
             auto processed_end = buf.begin();
             for(auto cur = processed_end, end = buf.end(); cur != end; ) {
                 if (*cur == '\n') {

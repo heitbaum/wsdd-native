@@ -26,14 +26,14 @@ enum AllowedAddressFamily {
 struct WindowsDomain {
     template<class... Args>
     WindowsDomain(Args && ...args): name(std::forward<Args>(args)...) {}
-    
+
     sys_string name;
 };
 
 struct WindowsWorkgroup {
     template<class... Args>
     WindowsWorkgroup(Args && ...args): name(std::forward<Args>(args)...) {}
-    
+
     sys_string name;
 };
 
@@ -58,7 +58,7 @@ struct NetworkInterface {
         name(n),
         index(idx) {
     }
-    
+
     friend auto operator<=>(const NetworkInterface & lhs, const NetworkInterface & rhs) -> std::strong_ordering {
         if (auto res = lhs.name <=> rhs.name; res != 0)
             return res;
@@ -70,7 +70,7 @@ struct NetworkInterface {
     friend auto operator!=(const NetworkInterface & lhs, const NetworkInterface & rhs) -> bool {
         return !(lhs == rhs);
     }
-    
+
     sys_string name;
     int index;
 };
@@ -165,7 +165,7 @@ constexpr decltype(auto) makeDependentOn(Arg && arg) {
 }
 
 
-extern std::mt19937 g_Random; 
+extern std::mt19937 g_Random;
 
 
 #endif

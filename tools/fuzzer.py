@@ -11,7 +11,7 @@ Mutation-based black-box fuzzer for wsdd-native targeting both attack surfaces:
 
 Usage:
     python3 fuzzer.py [--host HOST] [--uuid UUID] [--seed SEED]
-                      [--rounds ROUNDS] [--timeout TIMEOUT] 
+                      [--rounds ROUNDS] [--timeout TIMEOUT]
                       [--local-ip LOCAL_IP] [--verbose]
 
     --host     Target IP (default: main interface of this host)

@@ -11,7 +11,7 @@ rm -rf /var/run/wsddn || true
 rm -f /var/log/wsddn.* || true
 
 
-#User and group were broken before 1.4 
+#User and group were broken before 1.4
 #Let's delete them if they exist (unconditionally for good measure)
 dscl . -delete /Users/_wsddn || true
 dscl . -delete /Groups/_wsddn || true

@@ -24,27 +24,27 @@ void ServerManager::onFatalInterfaceMonitorError(asio::error_code ec) {
 
 void ServerManager::addAddress(const NetworkInterface & interface, const ip::address & addr) {
     auto & server = m_serversByAddress[addr];
-    
+
     if (server && server->interface() == interface && server->state() == WsdServer::Running)
         return;
-    
+
     WSDLOG_INFO("Adding interface {}, addr {}", interface, addr.to_string());
     server = createServer(interface, addr);
 }
 
 void ServerManager::removeAddress(const NetworkInterface & interface, const ip::address & addr) {
-    
+
     auto itServer = m_serversByAddress.find(addr);
     if (itServer == m_serversByAddress.end())
         return;
-    
+
     auto & server = itServer->second;
     if (server && server->interface() != interface)
         return;
-    
+
     WSDLOG_INFO("Removing interface {}, addr {}", interface, addr.to_string());
     if (server)
         server->stop(false);
     m_serversByAddress.erase(itServer);
-        
+
 }

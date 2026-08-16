@@ -10,22 +10,22 @@
 struct CommandLine {
     std::optional<std::filesystem::path> configFile;
     std::optional<DaemonType> daemonType;
-    
+
     std::vector<sys_string> interfaces;
     std::vector<sys_string> includePatterns;
     std::vector<sys_string> excludePatterns;
     std::optional<AllowedAddressFamily> allowedAddressFamily;
     std::optional<int> hoplimit;
     std::optional<uint16_t> sourcePort;
-    
+
     std::optional<Uuid> uuid;
     std::optional<sys_string> hostname;
     std::optional<MemberOf> memberOf;
-    
+
     std::optional<std::filesystem::path> smbConf;
-    
+
     std::optional<std::filesystem::path> metadataFile;
-    
+
     std::optional<spdlog::level::level_enum> logLevel;
     std::optional<std::filesystem::path> logFile;
 #if HAVE_OS_LOG
@@ -34,19 +34,19 @@ struct CommandLine {
     std::optional<std::filesystem::path> pidFile;
     std::optional<Identity> runAs;
     std::optional<std::filesystem::path> chrootDir;
-    
+
 
     void parse(int argc, char * argv[], Argum::ColorStatus envColorStatus);
     void mergeConfigFile(const std::filesystem::path & path);
-    
+
 private:
     class ConfigFileError;
-    
+
     template<class Handler>
     void parseConfigKey(std::string_view keyName, const toml::node & value, Handler h);
-    
+
     void parseConfigKey(std::string_view keyName, const toml::node & value);
-    
+
     template<class Expected, class Handler>
     void setConfigValue(bool isSet, std::string_view keyName, const toml::node & value, Handler handler);
 };

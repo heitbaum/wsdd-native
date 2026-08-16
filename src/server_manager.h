@@ -11,7 +11,7 @@
 class ServerManager : public InterfaceMonitor::Handler {
 
 public:
-    ServerManager(asio::io_context & ctxt, 
+    ServerManager(asio::io_context & ctxt,
                   const refcnt_ptr<Config> & config,
                   InterfaceMonitorFactory ifaceMonitorFactory,
                   HttpServerFactory httpServerFactory,
@@ -27,7 +27,7 @@ public:
     void start() {
         m_interfaceMonitor->start(*this);
     }
-    
+
     void stop(bool gracefully) {
         m_interfaceMonitor->stop();
         for(auto & [_, server]: m_serversByAddress) {
@@ -41,7 +41,7 @@ private:
     void addAddress(const NetworkInterface & interface, const ip::address & addr) override;
     void removeAddress(const NetworkInterface & interface, const ip::address & addr) override;
     void onFatalInterfaceMonitorError(asio::error_code ec) override;
-    
+
     auto createServer(const NetworkInterface & interface, const ip::address & addr) -> refcnt_ptr<WsdServer>;
 
 private:

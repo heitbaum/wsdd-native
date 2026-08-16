@@ -12,19 +12,19 @@ wsddn - WS-Discovery Host Daemon
 
 *wsddn* *--help* +
 *wsddn* *--version* +
-*wsddn* [*--unixd*|*--systemd*|*--launchd*] 
+*wsddn* [*--unixd*|*--systemd*|*--launchd*]
     [*-c* _path_] [*-i* _name_]... [*--include-pattern* _regex_]... [*--exclude-pattern* _regex_]...
-    [*-4*|*-6*] [*--hoplimit* _number_] [*--source-port* _number_] [*--uuid* _uuid_] 
-    [*-H* _name_] [*-D*|*-W* _name_] [*--smb-conf* _path_] [*-m* _path_] 
-    [*--log-level* _level_] [*--log-file* _path_ | *--log-os-log*] 
+    [*-4*|*-6*] [*--hoplimit* _number_] [*--source-port* _number_] [*--uuid* _uuid_]
+    [*-H* _name_] [*-D*|*-W* _name_] [*--smb-conf* _path_] [*-m* _path_]
+    [*--log-level* _level_] [*--log-file* _path_ | *--log-os-log*]
     [*--pid-file* _path_] [*-U* _user_[:__group__]] [*-r* _dir_]
 
 == DESCRIPTION
 
-*wsddn* is a native daemon that implements the WS-Discovery (WSD) host protocol. It allows UNIX hosts 
+*wsddn* is a native daemon that implements the WS-Discovery (WSD) host protocol. It allows UNIX hosts
 to be found by modern Windows versions and displayed in their Explorer Network views.
 
-*wsddn* can be configured using command-line options or a configuration file (see *--config* option below); 
+*wsddn* can be configured using command-line options or a configuration file (see *--config* option below);
 command-line options override values specified in the configuration file.
 
 *wsddn* rereads its configuration file when it receives a hangup signal, *SIGHUP*.
@@ -51,16 +51,16 @@ Run as a systemd daemon. This option is only available on systemd systems.
 Run as a launchd daemon. This option is only available on macOS.
 
 *--config* _path_, *-c* _path_::
-Path to the configuration file. The file does not need to exist. If it exists, the file is read and options 
-specified in it are applied _if not already specified on the command line_. See "CONFIG FILE" below for information 
-about its syntax and content. Content of the configuration file is re-read upon *SIGHUP* signal. By default, 
+Path to the configuration file. The file does not need to exist. If it exists, the file is read and options
+specified in it are applied _if not already specified on the command line_. See "CONFIG FILE" below for information
+about its syntax and content. Content of the configuration file is re-read upon *SIGHUP* signal. By default,
 if this option isn't specified, no configuration file is read.
 
 === Daemon behavior options
 
 *--log-level* _level_::
-Sets the verbosity of log output. Log levels range from 0 (disable logging) to 6 (detailed trace) with the default being 4. 
-Passing values bigger than 6 is equivalent to 6. 
+Sets the verbosity of log output. Log levels range from 0 (disable logging) to 6 (detailed trace) with the default being 4.
+Passing values bigger than 6 is equivalent to 6.
 
 *--log-file* _path_::
 The path of the file to write the log output to. If not specified, *wsddn* outputs its log messages as follows:
@@ -72,24 +72,24 @@ The path of the file to write the log output to. If not specified, *wsddn* outpu
 
 
 *--log-os-log*::
-Available only on macOS 10.12 or higher. If specified, log output is sent to the system log visible via 
-the Console app or *log* command-line tool. 
+Available only on macOS 10.12 or higher. If specified, log output is sent to the system log visible via
+the Console app or *log* command-line tool.
 This option is mutually exclusive with *--log-file*.
 
 *--pid-file* _path_::
-Set the path to the PID file. If not specified, no PID file is written. Send *SIGHUP* to the process ID in the PID file 
-to reload configuration. If the *--user* option is used, the directory of the PID file must allow the specified user to 
-create and delete files. 
+Set the path to the PID file. If not specified, no PID file is written. Send *SIGHUP* to the process ID in the PID file
+to reload configuration. If the *--user* option is used, the directory of the PID file must allow the specified user to
+create and delete files.
 
 *--user* _username_[:__groupname__], *-U* _username_[:__groupname__]::
 
-Set the identity under which the process that performs network communications will run. If the group name is not 
+Set the identity under which the process that performs network communications will run. If the group name is not
 specified, the primary group of the username is used.
 +
 If this option is not specified, then the behavior is as follows:
 +
-* If the wsddn process is run under the root account, it tries to use a special unprivileged account name 
-(*_wsddn*:**_wsddn** or *wsddn*:**wsddn** depending on the platform). The user and group are created if they do not exist. 
+* If the wsddn process is run under the root account, it tries to use a special unprivileged account name
+(*_wsddn*:**_wsddn** or *wsddn*:**wsddn** depending on the platform). The user and group are created if they do not exist.
 Any failures in these steps stop the process.
 * Otherwise, wsddn uses the account it is run under.
 
@@ -98,17 +98,17 @@ The net effect of these rules is that wsddn will under no circumstances perform 
 
 *--chroot* _dir_, *-r* _dir_::
 
-Set the directory into which the process that performs network communications should chroot. This further limits any impact 
+Set the directory into which the process that performs network communications should chroot. This further limits any impact
 of potential network exploits against wsddn.
 +
 If not specified, the behavior is as follows:
 
-* If the wsddn process is run under the root account: use */var/empty* or */var/run/wsddn* depending on the platform. 
+* If the wsddn process is run under the root account: use */var/empty* or */var/run/wsddn* depending on the platform.
   This directory will be created if it does not exist.
 * Otherwise: do not chroot.
 
 +
-Note: do not use external methods to chroot the wsddn process (e.g., using launchd config plist). Non-networking parts 
+Note: do not use external methods to chroot the wsddn process (e.g., using launchd config plist). Non-networking parts
 of wsddn need access to the normal filesystem to detect SMB configuration, etc.
 
 === Networking options
@@ -122,7 +122,7 @@ The equivalent config file option is *interfaces*.
 
 *--include-pattern* _regex_::
 
-A regular expression pattern to select which network interfaces to use. 
+A regular expression pattern to select which network interfaces to use.
 The regular expression syntax is ECMAScript. Pass this option multiple times for multiple patterns.
 See "INTERFACE SELECTION LOGIC" section for details on how this option is used.
 +
@@ -130,7 +130,7 @@ The equivalent config file option is *include-patterns*.
 
 *--exclude-pattern* _regex_::
 
-A regular expression pattern to select which network interfaces NOT to use. 
+A regular expression pattern to select which network interfaces NOT to use.
 The regular expression syntax is ECMAScript. Pass this option multiple times for multiple patterns.
 See "INTERFACE SELECTION LOGIC" section for details on how this option is used.
 +
@@ -150,50 +150,50 @@ The equivalent config file option is *allowed-address-family*.
 Set the hop limit for multicast packets. The default is 1, which should prevent packets from leaving the local network segment.
 
 *--source-port* _number_::
-Set the source port for outgoing multicast messages, so that replies will use this as the destination port. 
-This is useful for firewalls that do not detect incoming unicast replies to a multicast as part of the flow, 
+Set the source port for outgoing multicast messages, so that replies will use this as the destination port.
+This is useful for firewalls that do not detect incoming unicast replies to a multicast as part of the flow,
 so the port needs to be fixed in order to be allowed manually.
 
 
 === Machine information options
 
 *--uuid* _uuid_::
-The WS-Discovery protocol requires your machine to have a unique identifier that is stable across reboots or changes 
-in networks. By default, *wsddn* uses UUID version 5 with a private namespace and the host name of the machine. 
-This will remain stable as long as the hostname doesn't change. If desired, you can override this with a fixed 
+The WS-Discovery protocol requires your machine to have a unique identifier that is stable across reboots or changes
+in networks. By default, *wsddn* uses UUID version 5 with a private namespace and the host name of the machine.
+This will remain stable as long as the hostname doesn't change. If desired, you can override this with a fixed
 UUID using this option.
 
 *--hostname* _name_, *-H* _name_::
-Override the hostname to be reported to Windows machines. By default, the local machine's hostname 
-(with domain part, if any, removed) is used. If you set the name to *:NETBIOS:*, then the NetBIOS 
-hostname will be used. The NetBIOS hostname is either detected from SMB configuration, if found, 
+Override the hostname to be reported to Windows machines. By default, the local machine's hostname
+(with domain part, if any, removed) is used. If you set the name to *:NETBIOS:*, then the NetBIOS
+hostname will be used. The NetBIOS hostname is either detected from SMB configuration, if found,
 or produced by capitalizing the normal machine hostname.
 
 *--domain* _name_, *-D* _name_::
-Report this computer as a member of a Windows domain _name_. Options *--domain* and *--workgroup* 
-are mutually exclusive. If neither is specified, domain/workgroup membership is auto-detected 
+Report this computer as a member of a Windows domain _name_. Options *--domain* and *--workgroup*
+are mutually exclusive. If neither is specified, domain/workgroup membership is auto-detected
 from SMB configuration. If no SMB configuration is found, it is set to a workgroup named *WORKGROUP*.
 +
 The equivalent config file option is *member-of*.
 
 *--workgroup* _name_, *-W* _name_::
-Report this computer as a member of a Windows workgroup _name_. Options *--domain* and *--workgroup* 
-are mutually exclusive. If neither is specified, domain/workgroup membership is auto-detected from 
-SMB configuration. If no SMB configuration is found, it is set to a workgroup named *WORKGROUP*. 
+Report this computer as a member of a Windows workgroup _name_. Options *--domain* and *--workgroup*
+are mutually exclusive. If neither is specified, domain/workgroup membership is auto-detected from
+SMB configuration. If no SMB configuration is found, it is set to a workgroup named *WORKGROUP*.
 +
-The equivalent config file option is *member-of*. 
+The equivalent config file option is *member-of*.
 
 *--smb-conf* _path_::
-Path to *smb.conf*, *samba.conf*, or *ksmbd.conf* file to extract the SMB configuration from. 
-By default, *wsddn* tries to locate this file on its own by querying your local Samba installation. 
-Use this option if auto-detection fails, picks the wrong Samba instance, or if you are using 
+Path to *smb.conf*, *samba.conf*, or *ksmbd.conf* file to extract the SMB configuration from.
+By default, *wsddn* tries to locate this file on its own by querying your local Samba installation.
+Use this option if auto-detection fails, picks the wrong Samba instance, or if you are using
 KSMBD on Linux. The equivalent config file option is *smb-conf*. On macOS, using this option
 overrides normal Apple SMB detection and allows you to use a custom Samba instance.
 
 *--metadata* _path_, *-m* _path_::
-Path to a custom metadata XML file. Custom metadata allows you to completely replace the information 
-normally supplied by *wsddn* to Windows with your own. See 
-https://github.com/gershnik/wsdd-native/blob/master/config/metadata/README.md for details about the 
+Path to a custom metadata XML file. Custom metadata allows you to completely replace the information
+normally supplied by *wsddn* to Windows with your own. See
+https://github.com/gershnik/wsdd-native/blob/master/config/metadata/README.md for details about the
 metadata format and content.
 
 == ENVIRONMENT
@@ -204,24 +204,24 @@ The following environment variables, in order of precedence from highest to lowe
 Set to a non-empty value (1 is recommended) to prevent color output on *stdout*/*stderr*.
 
 *FORCE_COLOR*::
-Set to a non-empty value (1 is recommended) to force color output on *stdout*/*stderr*. 
+Set to a non-empty value (1 is recommended) to force color output on *stdout*/*stderr*.
 
 *CLICOLOR_FORCE*::
-If set to *0* or *false*, it prevents color output on *stdout*/*stderr*. 
-If set to any other non-empty value, it forces color output. 
+If set to *0* or *false*, it prevents color output on *stdout*/*stderr*.
+If set to any other non-empty value, it forces color output.
 
 *CLICOLOR*::
 Same as *CLICOLOR_FORCE* but with lower precedence.
 
 *COLORTERM*::
-If set to a non-empty value, the terminal is assumed to support color output. Unless suppressed by 
-higher precedence variables, the output to *stdout*/*stderr* will be colored _iff_ they are connected 
+If set to a non-empty value, the terminal is assumed to support color output. Unless suppressed by
+higher precedence variables, the output to *stdout*/*stderr* will be colored _iff_ they are connected
 to the terminal (as reported by *isatty*()).
 
 *TERM*::
-The content of this variable is used to detect whether the terminal supports colors. The detection 
-criteria are undocumented and subject to change. If the terminal is deemed to support colors 
-and unless suppressed by higher precedence variables, the output to *stdout*/*stderr* will be colored 
+The content of this variable is used to detect whether the terminal supports colors. The detection
+criteria are undocumented and subject to change. If the terminal is deemed to support colors
+and unless suppressed by higher precedence variables, the output to *stdout*/*stderr* will be colored
 _iff_ they are connected to the terminal (as reported by *isatty*()).
 
 == SIGNALS
@@ -230,11 +230,11 @@ _iff_ they are connected to the terminal (as reported by *isatty*()).
 
 *SIGHUP*:: Gracefully stop network communications, reload configuration and re-start communications.
 
-*SIGTERM*, *SIGINT*:: Gracefully stop network communications and exit. 
+*SIGTERM*, *SIGINT*:: Gracefully stop network communications and exit.
 
 == EXIT STATUS
 
-The *wsddn* exit code is 0 upon normal termination (via *SIGINT* or *SIGTERM*) or non-zero upon error. 
+The *wsddn* exit code is 0 upon normal termination (via *SIGINT* or *SIGTERM*) or non-zero upon error.
 
 == FIREWALL SETUP
 
@@ -244,75 +244,75 @@ Traffic for the following ports, directions and addresses must be allowed:
 - Outgoing unicast traffic from udp/3702
 - Incoming traffic to tcp/5357
 
-You should further restrict the traffic to the (link-)local subnet, e.g. by using the fe80::/10 address 
+You should further restrict the traffic to the (link-)local subnet, e.g. by using the fe80::/10 address
 space for IPv6. Please note that IGMP traffic must be enabled in order to get IPv4 multicast traffic working.
 
 == CONFIG FILE
 
 The syntax of the configuration file is TOML (https://toml.io/en/).
 
-Any options specified on the command line take precedence over options in the config file. Most options are named and 
+Any options specified on the command line take precedence over options in the config file. Most options are named and
 behave exactly the same as the corresponding command line options. Exceptions are explained in-depth below.
 
-*allowed-address-family* = "IPv4" | "IPv6":: 
-Restrict communications to the given address family. Valid values are "IPv4" or "IPv6", case-insensitive. 
+*allowed-address-family* = "IPv4" | "IPv6"::
+Restrict communications to the given address family. Valid values are "IPv4" or "IPv6", case-insensitive.
 The equivalent command line options are *--ipv4only* and *--ipv6only*.
 
-*chroot* = "_path_":: 
+*chroot* = "_path_"::
 Same as *--chroot* command line option.
 
-*hoplimit* = _number_:: 
+*hoplimit* = _number_::
 Same as *--hoplimit* command line option.
 
-*source-port* = _number_:: 
+*source-port* = _number_::
 Same as *--source-port* command line option.
 
-*hostname* = "_name_":: 
+*hostname* = "_name_"::
 Same as *--hostname* command line option.
 
-*interfaces* = [ "_name_", ... ]:: 
-Network interfaces to use. See "INTERFACE SELECTION LOGIC" section for 
+*interfaces* = [ "_name_", ... ]::
+Network interfaces to use. See "INTERFACE SELECTION LOGIC" section for
 details on how this option is used. The equivalent command line option is *--interface*.
 
 *include-patterns* = [ "_regex_", ...]::
-Regular expression patterns to select which network interfaces to use. 
-The regular expression syntax is ECMAScript. See "INTERFACE SELECTION LOGIC" section for 
+Regular expression patterns to select which network interfaces to use.
+The regular expression syntax is ECMAScript. See "INTERFACE SELECTION LOGIC" section for
 details on how this option is used. The equivalent command line option is *--include-pattern*.
 
 *exclude-patterns* = [ "_regex_", ...]::
-Regular expression patterns to select which network interfaces NOT to use. 
-The regular expression syntax is ECMAScript. See "INTERFACE SELECTION LOGIC" section for 
+Regular expression patterns to select which network interfaces NOT to use.
+The regular expression syntax is ECMAScript. See "INTERFACE SELECTION LOGIC" section for
 details on how this option is used. The equivalent command line option is *--exclude-pattern*.
 
-*log-level* = _number_:: 
+*log-level* = _number_::
 Same as *--log-level* command line option.
 
-*log-file* = "_path_":: 
+*log-file* = "_path_"::
 Same as *--log-file* command line option.
 
-*log-os-log* = true/false:: 
+*log-os-log* = true/false::
 Same as *--log-os-log* command line option.
 
 *member-of* = "Workgroup/__name__" | "Domain/__name__"::
 Report whether the host is a member of a given workgroup or domain. To specify a workgroup,
-use "Workgroup/name" syntax. To specify a domain, use "Domain/name". The "workgroup/" and "domain/" 
-prefixes are not case-sensitive. If not specified, workgroup/domain membership is detected 
-from SMB configuration. If no SMB configuration is found, it is set to a workgroup named *WORKGROUP*. 
+use "Workgroup/name" syntax. To specify a domain, use "Domain/name". The "workgroup/" and "domain/"
+prefixes are not case-sensitive. If not specified, workgroup/domain membership is detected
+from SMB configuration. If no SMB configuration is found, it is set to a workgroup named *WORKGROUP*.
 The equivalent command line options are *--domain* and *--workgroup*.
 
-*pid-file* = "_path_":: 
+*pid-file* = "_path_"::
 Same as *--pid-file* command line option.
 
-*smb-conf* = "_path_":: 
+*smb-conf* = "_path_"::
 Same as *--smb-conf* command line option.
 
-*metadata* = "_path_":: 
+*metadata* = "_path_"::
 Same as *--metadata* command line option.
 
-*user* = "_username_[:__groupname__]":: 
+*user* = "_username_[:__groupname__]"::
 Same as *--user* command line option.
 
-*uuid* = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx":: 
+*uuid* = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"::
 Same as *--uuid* command line option.
 
 == INTERFACE SELECTION LOGIC
@@ -322,7 +322,7 @@ The interfaces to use are selected using the following rules:
 * Loop-back interfaces are never used, even when explicitly requested.
 * An interface must have an address in a selected address family (IPv4, IPv6, or both).
   For IPv6, only the link-local addresses are used.
-* If neither *--interface* nor *--include-pattern* are specified, all interfaces NOT matching any *--exclude-pattern* 
+* If neither *--interface* nor *--include-pattern* are specified, all interfaces NOT matching any *--exclude-pattern*
   are used. In particular, this means that if no interface selection options are specified, all non-loop-back
   interfaces are used.
 * Otherwise:
@@ -353,18 +353,18 @@ wsddn --systemd --config=/etc/wsddn.conf
 wsddn -i eth0 -i eth2 -6
 ----
 
-=== Handle traffic only on interfaces named eth<something> 
+=== Handle traffic only on interfaces named eth<something>
 
 [source]
 ----
-wsddn --include-pattern "eth.*" 
+wsddn --include-pattern "eth.*"
 ----
 
-=== Handle traffic only on interfaces NOT named veth<something> 
+=== Handle traffic only on interfaces NOT named veth<something>
 
 [source]
 ----
-wsddn --exclude-pattern "veth.*" 
+wsddn --exclude-pattern "veth.*"
 ----
 
 == AUTHOR

@@ -5,8 +5,8 @@ include(GNUInstallDirs)
 
 install(CODE "message(\"Prefix: '\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}'\")")
 
-install(TARGETS 
-    wsddn RUNTIME 
+install(TARGETS
+    wsddn RUNTIME
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

@@ -7,13 +7,13 @@
 #include <sys_config.h>
 
 #ifdef __GNUC__
-    #define WSDDN_SUPPRESS_WARNINGS_BEGIN _Pragma("GCC diagnostic push") 
+    #define WSDDN_SUPPRESS_WARNINGS_BEGIN _Pragma("GCC diagnostic push")
     #define WSDDN_SUPPRESS_WARNING_HELPER0(arg) #arg
     #define WSDDN_SUPPRESS_WARNING_HELPER1(name) WSDDN_SUPPRESS_WARNING_HELPER0(GCC diagnostic ignored name)
     #define WSDDN_SUPPRESS_WARNING_HELPER2(name) WSDDN_SUPPRESS_WARNING_HELPER1(#name)
     #define WSDDN_SUPPRESS_WARNING(name) _Pragma(WSDDN_SUPPRESS_WARNING_HELPER2(name))
     #define WSDDN_SUPPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
-    
+
     #define WSDDN_IGNORE_DEPRECATED_BEGIN WSDDN_SUPPRESS_WARNINGS_BEGIN \
         WSDDN_SUPPRESS_WARNING(-Wdeprecated-declarations)
     #define WSDDN_IGNORE_DEPRECATED_END WSDDN_SUPPRESS_WARNINGS_END

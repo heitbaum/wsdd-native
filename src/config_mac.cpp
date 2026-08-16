@@ -17,7 +17,7 @@ auto Config::detectAppleWinNetInfo(bool useNetbiosHostName) -> std::optional<Win
         WSDLOG_WARN("SMB info is not present in configuration store");
         return std::nullopt;
     }
-     
+
     auto dict = (CFDictionaryRef)smb.get();
     sys_string_cfstr workgroup = (CFStringRef)CFDictionaryGetValue(dict, CFSTR("Workgroup"));
     sys_string_cfstr hostname = (CFStringRef)CFDictionaryGetValue(dict, CFSTR("NetBIOSName"));
@@ -29,11 +29,11 @@ auto Config::detectAppleWinNetInfo(bool useNetbiosHostName) -> std::optional<Win
     sys_string_cfstr domain;
     cf_ptr<CFPropertyListRef> ad = cf_attach(SCDynamicStoreCopyValue (store.get(), CFSTR("com.apple.opendirectoryd.ActiveDirectory")));
     if (ad && CFGetTypeID(ad.get()) != CFDictionaryGetTypeID()) {
-        
+
         dict = (CFDictionaryRef)ad.get();
         domain = (CFStringRef)CFDictionaryGetValue(dict, CFSTR("DomainNameFlat"));
     }
-    
+
     if (!workgroup.cf_str() && !domain.cf_str()) {
         WSDLOG_WARN("Cannot detect either workgroup or domain from configuration store");
         return std::nullopt;
@@ -51,7 +51,7 @@ auto Config::detectAppleWinNetInfo(bool useNetbiosHostName) -> std::optional<Win
             builder.append(c);
         ret.memberOf.emplace<WindowsWorkgroup>(builder.build());
     }
-    
+
     if (useNetbiosHostName && hostname.cf_str()) {
         for(auto c: sys_string_cfstr::utf8_access(hostname))
             builder.append(c);
@@ -59,10 +59,10 @@ auto Config::detectAppleWinNetInfo(bool useNetbiosHostName) -> std::optional<Win
     } else {
         if (useNetbiosHostName)
             ret.hostName = m_simpleHostName.to_upper();
-        else 
+        else
             ret.hostName = m_simpleHostName;
     }
-    
+
     if (desc.cf_str()) {
         for(auto c: sys_string_cfstr::utf8_access(desc))
             builder.append(c);

@@ -11,7 +11,7 @@ include(CMakePushCheckState)
 check_cxx_source_compiles("
     #include <linux/netlink.h>
     #include <linux/rtnetlink.h>
-    int main() {}" 
+    int main() {}"
 HAVE_NETLINK)
 
 if (NOT HAVE_NETLINK)
@@ -23,10 +23,10 @@ if (NOT HAVE_NETLINK)
         #include <net/if_dl.h>
         #include <net/route.h>
         #include <sys/socket.h>
-        int main() { 
+        int main() {
             int x = PF_ROUTE;
             size_t s = sizeof(rt_msghdr);
-        }" 
+        }"
     HAVE_PF_ROUTE)
 
     check_cxx_source_compiles("
@@ -36,9 +36,9 @@ if (NOT HAVE_NETLINK)
         #include <net/if_dl.h>
         #include <sys/socket.h>
         #include <sys/sysctl.h>
-        int main() { 
-            int x = NET_RT_IFLIST; 
-        }" 
+        int main() {
+            int x = NET_RT_IFLIST;
+        }"
     HAVE_SYSCTL_PF_ROUTE)
 
     check_cxx_source_compiles("
@@ -46,10 +46,10 @@ if (NOT HAVE_NETLINK)
         #include <sys/sockio.h>
         #include <netinet/in.h>
         #include <net/if.h>
-        int main() { 
-            int x = SIOCGLIFCONF; 
+        int main() {
+            int x = SIOCGLIFCONF;
             lifconf conf{};
-        }" 
+        }"
     HAVE_SIOCGLIFCONF)
 
     check_cxx_source_compiles("
@@ -74,25 +74,25 @@ check_library_exists(execinfo backtrace "" HAVE_EXECINFO_LIB)
 
 check_cxx_source_compiles("
     #include <cxxabi.h>
-    int main() { 
+    int main() {
         int stat;
-        abi::__cxa_demangle(\"abc\", 0, 0, &stat); 
+        abi::__cxa_demangle(\"abc\", 0, 0, &stat);
     }"
 HAVE_CXXABI_H)
 
 
 check_cxx_source_compiles("
     #include <cxxabi.h>
-    int main() { 
+    int main() {
         using x = decltype(abi::__cxa_throw);
     }"
 HAVE_ABI_CXA_THROW)
 
-# The following section looks up runtime paths at build time. 
+# The following section looks up runtime paths at build time.
 # Depending on a setup this might or might not work for cross-compiling
-# Thus the kill-switch WSDDN_NO_TARGET_PATHS_DETECTION. 
+# Thus the kill-switch WSDDN_NO_TARGET_PATHS_DETECTION.
 # If cross-compiling path detection cannot work set it to ON. This makes
-# CMake invoker responsible for setting any desired flags detected below. 
+# CMake invoker responsible for setting any desired flags detected below.
 if (NOT WSDDN_NO_TARGET_PATHS_DETECTION)
 
     if (NOT DEFINED USERADD_PATH)

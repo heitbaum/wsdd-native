@@ -15,14 +15,14 @@ public:
         new (this) PidFile(std::move(src));
         return *this;
     }
-    
+
     static auto open(std::filesystem::path filename,
                      std::optional<Identity> owner = std::nullopt) -> std::optional<PidFile> {
 
         const mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-        
+
         createMissingDirs(filename.parent_path(), mode | S_IXUSR | S_IXGRP | S_IXOTH, owner);
-        
+
         for ( ; ; ) {
             auto fd = ptl::FileDescriptor::open(filename, O_WRONLY | O_CREAT, mode);
             if (!ptl::tryLockFile(fd, ptl::FileLock::Exclusive))
@@ -41,21 +41,21 @@ public:
 
                 continue;
             }
-            
+
             auto pid = getpid();
             initFile(fd, mode, owner, pid);
             return PidFile(std::move(fd), std::move(filename), pid);
         }
-        
+
     }
-    
+
     ~PidFile() noexcept {
         if (!m_fd)
             return;
-        
+
         if (getpid() != m_lockingProcess)
             return;
-        
+
         std::error_code ec;
         std::filesystem::remove(m_path, ec);
         if (ec)
@@ -86,4 +86,4 @@ static_assert(!std::is_copy_constructible_v<PidFile>);
 static_assert(!std::is_copy_assignable_v<PidFile>);
 
 
-#endif 
+#endif

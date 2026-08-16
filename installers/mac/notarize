@@ -19,27 +19,27 @@ def notarize(package, username, team, password):
     workDir = package.parent
     print(f"Uploading to Apple to notarize")
     submission = callNotaryTool(['submit', str(package),
-                                 '--apple-id', username, '--team-id', team, '--password', password, 
+                                 '--apple-id', username, '--team-id', team, '--password', password,
                                  '--wait'])
     success = (submission['status'] == 'Accepted')
     submissionId = submission['id']
     print("Downloading log file")
-    callNotaryTool(['log', submissionId, 
-                    '--apple-id', username, '--team-id', team, '--password', password, 
+    callNotaryTool(['log', submissionId,
+                    '--apple-id', username, '--team-id', team, '--password', password,
                     workDir/'notarization-log.json'])
     log = (workDir/'notarization-log.json').read_text()
     print(f"Notarization log:\n{log}")
-    if not success:    
-        sys.exit(1) 
+    if not success:
+        sys.exit(1)
     print("Stapling")
     subprocess.check_call(['xcrun', 'stapler', 'staple', f"{package}"])
     print("Done")
 
-def main(): 
+def main():
     parser = argparse.ArgumentParser(description='''
 Notarize Mac software
 ''')
-    parser.add_argument(dest='package', 
+    parser.add_argument(dest='package',
                         help=f'Package to notarize')
     parser.add_argument('--user', dest='username', type=str, required = True,
                         help='Username')

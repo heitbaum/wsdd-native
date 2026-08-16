@@ -6,10 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Unreleased
 
 ### Added
-- `--include-pattern` and `--exclude-pattern` command line options and equivalent 
+- `--include-pattern` and `--exclude-pattern` command line options and equivalent
   config file settings to allow interface inclusion and exclusion via a regex.
   ([#31](https://github.com/gershnik/wsdd-native/issues/31))
-- Ability to suppress lookup of runtime paths at build time via WSDDN_NO_TARGET_PATHS_DETECTION 
+- Ability to suppress lookup of runtime paths at build time via WSDDN_NO_TARGET_PATHS_DETECTION
   CMake flag.
 
 ### Changed
@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.25] - 2026-06-23
 
 ### Fixed
-- A currently harmless case of undefined behavior in WSD response generation. 
+- A currently harmless case of undefined behavior in WSD response generation.
 
 ### Changed
 - Updated 3rd party dependencies
@@ -48,7 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - Updated 3rd party dependencies
-- Hardened HTTP and XML parsing against denial-of-service attacks. 
+- Hardened HTTP and XML parsing against denial-of-service attacks.
   This makes it a bit harder (but not impossible!) to mount DoS attacks against the server.
   Remember to never expose the server to the open internet!
 - Docker image now runs under non-root account.
@@ -76,7 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - Support building and running on operating systems that lack either Netlink or PF_ROUTE
-  mechanisms (such as for example Haiku OS). On such systems network interface changes 
+  mechanisms (such as for example Haiku OS). On such systems network interface changes
   after wsddn startup are not detected.
 - Automatic daemon user creation when running as root is now supported on Alpine and Illumos
 
@@ -100,9 +100,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - Samba config detection now works properly when `samba` tool is not present. Detection is also
-  no longer depends on `whereis` tool. This is particularly an issue on OpenBSD but can be a problem 
-  on other platforms too ([#17](https://github.com/gershnik/wsdd-native/issues/17)) 
-- OpenBSD: UDP writes blocked by firewall no longer stop all processing on an 
+  no longer depends on `whereis` tool. This is particularly an issue on OpenBSD but can be a problem
+  on other platforms too ([#17](https://github.com/gershnik/wsdd-native/issues/17))
+- OpenBSD: UDP writes blocked by firewall no longer stop all processing on an
   interface ([#18](https://github.com/gershnik/wsdd-native/issues/18))
 - OpenBSD and potentially other less common BSD variants: `wsddn` now properly handles
   older BSD behavior where reading from multicast IPv4 sockets surfaces packets sent to
@@ -110,7 +110,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - OpenBSD and NetBSD: automatic daemon user creation now works properly. The default expected daemon user name
   is now "_wsddn" on both systems.
 - OpenSUSE: RPM package now installs cleanly without warning about missing `firewalld-filesystem` dependency
-- CMake build: build is now correctly reconfigures itself when `sys_config.h.in` changes 
+- CMake build: build is now correctly reconfigures itself when `sys_config.h.in` changes
 
 ### Changed
 - To optimize network traffic `wsddn` now sends resolving address directly in the WSD Hello message
@@ -147,7 +147,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.16] - 2025-01-12
 
 ### Added
-- `--source-port` command line argument and `source-port` config file option to set the source port for 
+- `--source-port` command line argument and `source-port` config file option to set the source port for
   multicast messages for better firewall interoperability.
 - Configuration files for `firewalld`. These are now also delivered and used in RPM binary packages.
 
@@ -203,7 +203,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.5] - 2023-07-21
 
 ### Fixed:
-- macOS: Hopefully final fix for [#4](https://github.com/gershnik/wsdd-native/issues/4): `_wsddn` user is reassigned to staff group on OS update 
+- macOS: Hopefully final fix for [#4](https://github.com/gershnik/wsdd-native/issues/4): `_wsddn` user is reassigned to staff group on OS update
 
 ### Changed:
 - Replaced ad-hoc calls to various Posix-y APIs with [ptl](https://github.com/gershnik/ptl)
@@ -233,7 +233,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Mac `.pkg` installer now correctly includes both x64 and arm64 architectures.
 
 ### Changed
-- Updated `{fmt}` library dependency 
+- Updated `{fmt}` library dependency
 - It is now possible to specify version externally when building `wsddn` by setting `WSDDN_VERSION` CMake variable.
 
 ## [1.1] - 2023-05-19
@@ -251,7 +251,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
 ## [1.0] - 2022-07-25
-### Added 
+### Added
 - First official release
 
 ## [0.6] - 2022-07-24

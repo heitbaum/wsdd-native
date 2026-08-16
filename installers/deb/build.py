@@ -102,7 +102,7 @@ Depends: {{shlibs_Depends}}
 Maintainer: Eugene Gershnik <gershnik@hotmail.com>
 Homepage: https://github.com/gershnik/wsdd-native
 Description: WS-Discovery Host Daemon
- Allows your Linux machine to be discovered by Windows 10 and above systems and displayed by their Explorer "Network" views. 
+ Allows your Linux machine to be discovered by Windows 10 and above systems and displayed by their Explorer "Network" views.
 
 """.lstrip())
 
@@ -120,7 +120,7 @@ shutil.copy(mydir / 'copyright',    debiandir / 'copyright')
 
 (debiandir / 'md5sums').write_text(md5sums)
 
-deps = subprocess.run(['dpkg-shlibdeps', '-O', '-eusr/bin/wsddn'], 
+deps = subprocess.run(['dpkg-shlibdeps', '-O', '-eusr/bin/wsddn'],
                       check=True, cwd=stagedir, stdout=subprocess.PIPE, encoding="utf-8").stdout.strip()
 key, val = deps.split('=', 1)
 key = key.replace(':', "_")

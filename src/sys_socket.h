@@ -16,7 +16,7 @@
 
 namespace ptl {
 
-    template<class Protocol, class Executor> 
+    template<class Protocol, class Executor>
     struct FileDescriptorTraits<asio::basic_datagram_socket<Protocol, Executor>> {
         [[gnu::always_inline]] static int c_fd(asio::basic_datagram_socket<Protocol, Executor> & socket) noexcept
             { return socket.native_handle();}
@@ -84,7 +84,7 @@ class SocketIOControl {
 public:
     constexpr auto name() const -> unsigned long { return Name; }
     auto data() -> void * { return &m_data; }
-    
+
 protected:
     T m_data;
 };
@@ -98,12 +98,12 @@ protected:
             auto copied = name.copy_data(0, m_data.ifr_name, IFNAMSIZ);
             memset(m_data.ifr_name + copied, 0, IFNAMSIZ - copied);
         }
-        
+
         auto result() const -> std::remove_cvref_t<decltype(this->m_data.ifr_flags)> {
             return m_data.ifr_flags;
         }
     };
-    
+
 #endif
 
 #ifdef SIOCGLIFCONF
@@ -182,7 +182,7 @@ protected:
             auto copied = name.copy_data(0, m_data.lifr_name, IFNAMSIZ);
             memset(m_data.lifr_name + copied, 0, IFNAMSIZ - copied);
         }
-        
+
         auto result() const -> std::remove_cvref_t<decltype(this->m_data.lifr_flags)> {
             return m_data.lifr_flags;
         }
@@ -198,7 +198,7 @@ protected:
         GetInterfaceName(int ifIndex) {
             set_ifreq_ifindex(m_data, ifIndex);
         }
-        
+
         auto result() const -> sys_string {
             auto len = strnlen(m_data.ifr_name, IFNAMSIZ);
             return sys_string(m_data.ifr_name, len);
@@ -211,7 +211,7 @@ protected:
 template<class IoControl, class Protocol, class Executor, class... Args>
 auto ioctlSocket(asio::basic_socket<Protocol, Executor> & socket, Args && ...args) ->
     outcome::result<decltype(std::declval<IoControl>().result())> {
-        
+
     IoControl control(std::forward<Args>(args)...);
 
     asio::error_code ec;

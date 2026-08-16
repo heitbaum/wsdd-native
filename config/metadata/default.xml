@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsx:Metadata
-    xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" 
-    xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" 
-    xmlns:wsdp="http://schemas.xmlsoap.org/ws/2006/02/devprof" 
-    xmlns:pnpx="http://schemas.microsoft.com/windows/pnpx/2005/10" 
+    xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+    xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+    xmlns:wsdp="http://schemas.xmlsoap.org/ws/2006/02/devprof"
+    xmlns:pnpx="http://schemas.microsoft.com/windows/pnpx/2005/10"
     xmlns:pub="http://schemas.microsoft.com/windows/pub/2005/07">
 <wsx:MetadataSection Dialect="http://schemas.xmlsoap.org/ws/2006/02/devprof/ThisDevice">
     <wsdp:ThisDevice>

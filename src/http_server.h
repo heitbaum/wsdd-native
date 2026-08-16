@@ -38,4 +38,4 @@ using HttpServerFactory = std::function<HttpServerFactoryT>;
 
 HttpServerFactoryT createHttpServer;
 
-#endif 
+#endif

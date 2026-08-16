@@ -20,10 +20,10 @@ const char * OsLogHandle::s_category = "main";
         return true;
 
     #elif defined(__linux__) && defined(IS_ALPINE_LINUX) && defined(ADDUSER_PATH) && defined(ADDGROUP_PATH)
-    
+
         (void)run({ADDGROUP_PATH, "-S", name.c_str()});
         (void)run({ADDUSER_PATH, "-S", "-D", "-H", "-G", name.c_str(), "-h", "/var/empty", "-s", "/sbin/nologin", "-g", name.c_str(), name.c_str()});
-        //without this the group entry in the /etc/group does not point back to the user, which 
+        //without this the group entry in the /etc/group does not point back to the user, which
         //apparently is the needed thing on Alpine because a) other daemons do it and b) without
         //it the `deluser wsddn` command reports "deluser: can't find wsddn in /etc/group"
         //The flip side is that `id wsddn` will report double group membership but this holds
@@ -88,9 +88,9 @@ int run(const ptl::StringRefArray & args) {
     sigs.del(SIGSTOP);
     spawnAttr.setSigDefault(sigs);
 #endif
-    
+
     auto proc = spawn(args, ptl::SpawnSettings().attr(spawnAttr).usePath());
-    
+
     auto stat = proc.wait().value();
     if (WIFEXITED(stat))
         return WEXITSTATUS(stat);
@@ -109,7 +109,7 @@ void shell(const ptl::StringRefArray & args, bool suppressStdErr, std::function<
     sigs.del(SIGSTOP);
     spawnAttr.setSigDefault(sigs);
 #endif
-    
+
     ptl::SpawnFileActions act;
     act.addDuplicateTo(write, stdout);
     act.addClose(read);

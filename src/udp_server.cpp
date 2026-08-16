@@ -32,7 +32,7 @@ public:
         m_recvSocket.open(prot);
         m_multicastSendSocket.open(prot);
         m_unicastSendSocket.open(prot);
-        
+
         m_recvSocket.non_blocking(true);
         m_unicastSendSocket.non_blocking(true);
 
@@ -52,7 +52,7 @@ public:
         read(m_unicastSendSocket, m_unicastRecvBuffer, m_unicastRecvSender, false);
         WSDLOG_INFO("{}: starting server", m_serverDesc);
     }
-    
+
     void stop() override {
         m_handler = nullptr;
         m_recvSocket.close();
@@ -60,20 +60,20 @@ public:
         m_unicastSendSocket.close();
         WSDLOG_INFO("{}: stopping server", m_serverDesc);
     }
-    
+
      void broadcast(XmlCharBuffer && data, std::function<void (asio::error_code)> continuation) override {
          write(std::move(data), &UdpServerImpl::m_multicastSendSocket, m_multicastDest, false, continuation);
      }
 
 private:
-    
+
     ~UdpServerImpl() noexcept {
     }
 
     void initAddresses(const ip::address_v4 & addr, [[maybe_unused]] const NetworkInterface & iface) {
-        
+
         auto multicastGroupAddress = ip::make_address_v4(g_WsdMulticastGroupV4);
-        
+
         m_multicastDest = ip::udp::endpoint(multicastGroupAddress, g_WsdUdpPort);
 
     #if PTL_HAVE_IP_MREQN
@@ -91,14 +91,14 @@ private:
         #if defined(__linux__)
             setSocketOption(m_recvSocket, ptl::SockOptIPv4MulticastAll, false);
         #endif
-        
+
         ReadMessageControl::applyV4(m_recvSocket);
-            
+
         m_recvSocket.bind(ip::udp::endpoint(multicastGroupAddress, g_WsdUdpPort));
         m_unicastSendSocket.bind(ip::udp::endpoint(addr, g_WsdUdpPort));
 
         setSocketOption(m_unicastSendSocket, ptl::SockOptIPv4MulticastLoop, false);
-        
+
     #if !defined(__NetBSD__) && !defined(__sun) && !defined(__HAIKU__) && \
         !( defined(__APPLE__) && __MAC_OS_X_VERSION_MIN_REQUIRED < 1070 )
         setSocketOption(m_multicastSendSocket, ptl::SockOptIPv4MulticastIface, multicastGroupRequest);
@@ -113,13 +113,13 @@ private:
     }
 
     void initAddresses(const ip::address_v6 & addr, const NetworkInterface & iface) {
-        
+
         auto multicastGroupAddress = ip::make_address_v6(g_WsdMulticastGroupV6);
-        
+
         auto destAddr = multicastGroupAddress;
         destAddr.scope_id(iface.index);
         m_multicastDest = ip::udp::endpoint(destAddr, g_WsdUdpPort);
-        
+
         m_recvSocket.set_option(ip::multicast::join_group(multicastGroupAddress, iface.index));
         m_recvSocket.set_option(ip::v6_only(true));
 
@@ -139,7 +139,7 @@ private:
             m_multicastSendSocket.bind(ip::udp::endpoint(ip::udp::endpoint(ip::address_v6(addr.to_bytes(), iface.index), m_config->sourcePort())));
 
     }
-    
+
 #if !defined(__linux__) && defined(IP_RECVIF)
     class ReadMessageControl {
     private:
@@ -147,16 +147,16 @@ private:
     public:
         static constexpr size_t size() noexcept { return sizeof(m_data); }
         cmsghdr * data() noexcept { return reinterpret_cast<cmsghdr *>(m_data); }
-        
+
         static bool checkInterfaceIndexV4(msghdr & msg, int ifIndex, const sys_string & serverDesc) {
             if (msg.msg_flags & MSG_CTRUNC) {
                 WSDLOG_ERROR("{}: control info is truncated", serverDesc);
                 return true;
             }
-            
+
             if (msg.msg_controllen < sizeof(struct cmsghdr))
                 return true;
-            
+
             for (cmsghdr * cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr)) {
                 if (cmptr->cmsg_level == IPPROTO_IP && cmptr->cmsg_type == IP_RECVIF) {
                     sockaddr_dl sdl;
@@ -164,10 +164,10 @@ private:
                     return sdl.sdl_index == ifIndex;
                 }
             }
-            
+
             return true;
         }
-        
+
         static void applyV4(ip::udp::socket & sock) {
             int val = 1;
             ptl::setSocketOption(sock, IPPROTO_IP, IP_RECVIF, &val, sizeof(val));
@@ -178,9 +178,9 @@ private:
     public:
         static constexpr size_t size() noexcept { return 0; }
         static cmsghdr * data() noexcept { return nullptr; }
-        
+
         static bool checkInterfaceIndexV4(msghdr & /*msg*/, int /*ifIndex*/, const sys_string & /*serverDesc*/) { return true; }
-        
+
         static void applyV4(ip::udp::socket & /*sock*/) {}
     };
 #endif
@@ -192,23 +192,23 @@ private:
 
             if (!m_handler)
                 return;
-            
+
             if (ec) {
                 if (ec != asio::error::operation_aborted) {
                     WSDLOG_ERROR("{}: error reading: {}", m_serverDesc, ec.message());
                     m_handler->onFatalUdpError();
                 }
-                
+
                 return;
             }
-            
+
             for ( ; ; ) {
                 sockaddr_storage from{};
-                
+
                 iovec iov[] = {{recvBuffer.data(), recvBuffer.size()}};
-                
+
                 ReadMessageControl control;
-                
+
                 msghdr msg{};
                 msg.msg_name = &from;
                 msg.msg_namelen = sizeof(from);
@@ -216,7 +216,7 @@ private:
                 msg.msg_iovlen = std::size(iov);
                 msg.msg_control = control.data();
                 msg.msg_controllen = control.size();
-                
+
                 size_t bytesRecvd = 0;
                 for ( ; ; ) {
                     bytesRecvd = ptl::receiveSocket(socket, &msg, 0, ec);
@@ -228,12 +228,12 @@ private:
                         read(socket, recvBuffer, sender, checkIfaceIndex);
                         return;
                     }
-                        
+
                     WSDLOG_ERROR("{}: error reading: {}", m_serverDesc, ec.message());
                     m_handler->onFatalUdpError();
                     return;
                 }
-                
+
                 if (from.ss_family == AF_INET) {
                     auto from4 = (const sockaddr_in *)&from;
                     sender = ip::udp::endpoint(makeAddress(*from4), ntohs(from4->sin_port));
@@ -244,10 +244,10 @@ private:
                     WSDLOG_DEBUG("{}: received invalid source address, ignoring", m_serverDesc);
                     continue;
                 }
-                
+
                 if (msg.msg_flags & MSG_TRUNC)
                     WSDLOG_ERROR("{}: read data truncated", m_serverDesc);
-                
+
                 if (checkIfaceIndex && m_isV4 && !ReadMessageControl::checkInterfaceIndexV4(msg, m_ifaceIdx, m_serverDesc)) {
                     continue;
                 }
@@ -293,10 +293,10 @@ private:
             std::function<void (asio::error_code)> continuation;
 
             void operator()(asio::error_code ec, size_t /*bytesSent, ip::udp::socket * socket*/) {
-                
+
                 if (!me->m_handler)
                     return;
-                
+
             #ifdef __OpenBSD__
                 //On OpenBSD unicast send_to can fail with EACCESS when firewall
                 //blocks it. This isn't fatal and shouldn't be an error at all, so let's
@@ -310,7 +310,7 @@ private:
                 if (ec) {
                     if (ec != asio::error::operation_aborted) {
                         WSDLOG_ERROR("{}: error writing: {}", me->m_serverDesc, ec.message());
-                        
+
                         if (continuation)
                             continuation(ec);
                         else
@@ -329,11 +329,11 @@ private:
                 auto delay = distrib(g_Random);
 
                 auto timer = std::make_shared<asio::steady_timer>(socket.get_executor(), asio::chrono::milliseconds(delay));
-                
+
                 timer->async_wait([timer, *this](const asio::error_code & ec) {
                     if (ec || !socket.is_open())
                         return;
-                    
+
                     socket.async_send_to(buffer, dest, Callback{*this});
                 });
             }
@@ -344,7 +344,7 @@ private:
                           std::string_view((const char *)buffer.begin()->data(), buffer.begin()->size()));
         else
             WSDLOG_DEBUG("{}: sending {} bytes to {}:{}", m_serverDesc, buffer.begin()->size(), dest.address().to_string(), m_recvSender.port());
-        
+
         socket.async_send_to(buffer, dest, Callback{refcnt_retain(this), buffer, socket, dest, isUnicast, repeatCount, continuation});
     }
 
@@ -373,5 +373,5 @@ refcnt_ptr<UdpServer> createUdpServer(asio::io_context & ctxt,
                                       const ip::address & addr) {
 
     return refcnt_attach(new UdpServerImpl(ctxt, config, iface, addr));
-    
+
 }

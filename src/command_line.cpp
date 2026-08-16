@@ -10,7 +10,7 @@ using namespace Argum;
 using namespace std::literals;
 
 class CommandLine::ConfigFileError : public toml::parse_error {
-  
+
 public:
     ConfigFileError(const char * desc, spdlog::level::level_enum lev, const toml::source_region & src):
         parse_error(desc, src),
@@ -19,25 +19,25 @@ public:
     ConfigFileError(const std::string & str, spdlog::level::level_enum lev, const toml::source_region & src):
         ConfigFileError(str.c_str(), lev, src) {
     }
-    
+
     spdlog::level::level_enum level;
 };
 
 static auto parseUser(const sys_string & str) -> Identity {
-    
+
     sys_string username;
     std::optional<sys_string> groupname;
-    
+
     if (auto split = str.partition_at_first(U':')) {
         groupname = split->first;
         username = split->second;
     } else {
         username = str;
     }
-    
+
     gid_t gid;
     uid_t uid;
-    
+
     auto pwd = ptl::Passwd::getByName(username);
     if (!pwd)
         throw Parser::ValidationError(fmt::format("non-existent user {}", username));
@@ -50,12 +50,12 @@ static auto parseUser(const sys_string & str) -> Identity {
             throw Parser::ValidationError(fmt::format("non-existent group {}", *groupname));
         gid = grp->gr_gid;
     }
-    
+
     return Identity(uid, gid);
 }
 
 static auto addInterface(CommandLine & cmdline, sys_string val) {
-    
+
     if (val.empty())
         throw Parser::ValidationError("interface name cannot be empty");
     cmdline.interfaces.emplace_back(val);
@@ -64,7 +64,7 @@ static auto addInterface(CommandLine & cmdline, sys_string val) {
 static auto addPattern(CommandLine & cmdline, bool include, sys_string val) {
     if (val.empty())
         throw Parser::ValidationError("interface pattern cannot be empty");
-    
+
     try {
         std::regex(sys_string::char_access(val).c_str(), std::regex::ECMAScript);
     } catch (std::regex_error & ex) {
@@ -233,7 +233,7 @@ static std::string colorTagged(std::string_view str) {
 
         return std::regex(patterns, std::regex_constants::ECMAScript);
     }();
-    
+
     std::string ret;
     for (auto start = str.cbegin(); ; ) {
         std::cmatch m;
@@ -312,9 +312,9 @@ static void removeColors(std::string & str) {
 }
 
 void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
- 
+
     const char * const progname = (argc ? argv[0] : WSDDN_PROGNAME);
-    
+
     Argum::Parser parser;
     //Program options
     parser.add(Option("--help", "-h").
@@ -324,7 +324,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
         auto useColor = shouldUseColor(envColorStatus, stdout);
         auto colorizer = colorizerForFile(envColorStatus, stdout);
         auto help = parser.formatHelp(progname, terminalWidth(stdout), colorizer);
-        if (!useColor) 
+        if (!useColor)
             removeColors(help);
         fmt::print("{}", help);
         exit(EXIT_SUCCESS);
@@ -362,7 +362,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
         this->daemonType.emplace(DaemonType::Launchd);
     }));
 #endif
-    
+
     //Network options
     parser.add(Option("--interface", "-i").
                argName("NAME").
@@ -407,7 +407,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
                handler([this](std::string_view val){
         this->sourcePort = Argum::parseIntegral<unsigned>(val);
     }));
-    
+
     //Machine info
     parser.add(Option("--uuid").
                argName("UUID").
@@ -458,7 +458,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
                handler([this](std::string_view val){
         setSmbConf(*this, val);
     }));
-    
+
     parser.add(Option("--metadata", "-m").
                argName("PATH").
                help("location of a custom metadata XML file").
@@ -466,7 +466,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
                handler([this](std::string_view val){
         setMetadataFile(*this, val);
     }));
-    
+
     //Behavior options
     parser.add(Option("--log-level").
                argName("LEVEL").
@@ -526,7 +526,7 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
                handler([this](std::string_view val){
         setChrootDir(*this, val);
     }));
-    
+
     try {
         parser.parse(argc, argv);
     } catch (ParsingException & ex) {
@@ -538,12 +538,12 @@ void CommandLine::parse(int argc, char * argv[], ColorStatus envColorStatus) {
 }
 
 void CommandLine::parseConfigKey(std::string_view keyName, const toml::node & value) {
-    
+
     //Network options
     if (keyName == "interfaces"sv) {
-        
+
         setConfigValue<toml::array>(!this->interfaces.empty(), keyName, value, [this](const toml::array & val) {
-            
+
             for(auto & el : val) {
                 auto * name = el.as_string();
                 if (!name) {
@@ -556,9 +556,9 @@ void CommandLine::parseConfigKey(std::string_view keyName, const toml::node & va
         });
 
     } else if (keyName == "include-patterns"sv) {
-        
+
         setConfigValue<toml::array>(!this->includePatterns.empty(), keyName, value, [this](const toml::array & val) {
-            
+
             for(auto & el : val) {
                 auto * name = el.as_string();
                 if (!name) {
@@ -571,9 +571,9 @@ void CommandLine::parseConfigKey(std::string_view keyName, const toml::node & va
         });
 
     } else if (keyName == "exclude-patterns"sv) {
-        
+
         setConfigValue<toml::array>(!this->excludePatterns.empty(), keyName, value, [this](const toml::array & val) {
-            
+
             for(auto & el : val) {
                 auto * name = el.as_string();
                 if (!name) {
@@ -584,107 +584,107 @@ void CommandLine::parseConfigKey(std::string_view keyName, const toml::node & va
                 addPattern(*this, false, sys_string(name->get()).trim());
             }
         });
-        
+
     } else if (keyName == "allowed-address-family"sv) {
-        
+
         setConfigValue<std::string>(bool(this->allowedAddressFamily), keyName, value, [this](const toml::value<std::string> & val) {
             setAllowedAddressFamily(*this, sys_string(*val));
         });
-        
+
     } else if (keyName == "hoplimit"sv) {
-        
+
         setConfigValue<int64_t>(bool(this->hoplimit), keyName, value, [this](const toml::value<int64_t> & val) {
             if (*val < 1)
                 throw ConfigFileError("hoplimit value must be greater than 0", spdlog::level::err, val.source());
             this->hoplimit = int((unsigned short)*val);
         });
-        
+
     } else if (keyName == "source-port"sv) {
-        
+
         setConfigValue<int64_t>(bool(this->sourcePort), keyName, value, [this](const toml::value<int64_t> & val) {
             if (*val < 0 || *val >= 65536)
                 throw ConfigFileError("source-port value must be in [0, 65536) range", spdlog::level::err, val.source());
             this->sourcePort = uint16_t(*val);
         });
-        
+
     } else
-        
+
     //Machine info
-    
+
     if (keyName == "uuid"sv) {
-        
+
         setConfigValue<std::string>(bool(this->uuid), keyName, value, [this](const toml::value<std::string> & val) {
             setUuid(*this, sys_string(*val));
         });
-        
+
     } else if (keyName == "hostname"sv) {
-        
+
         setConfigValue<std::string>(bool(this->hostname), keyName, value, [this](const toml::value<std::string> & val) {
             setHostname(*this, sys_string(*val).trim());
         });
-    
+
     } else if (keyName == "member-of"sv) {
-        
+
         setConfigValue<std::string>(bool(this->memberOf), keyName, value, [this](const toml::value<std::string> & val){
             setMemberOf(*this, sys_string(*val));
         });
-        
+
     } else if (keyName == "smb-conf"sv) {
         setConfigValue<std::string>(bool(this->smbConf), keyName, value, [this](const toml::value<std::string> & val) {
             setSmbConf(*this, *val);
         });
-        
+
     } else if (keyName == "metadata"sv) {
-        
+
         setConfigValue<std::string>(bool(this->metadataFile), keyName, value, [this](const toml::value<std::string> & val) {
             setMetadataFile(*this, *val);
         });
-    
+
     } else
-    
+
     //Behavior options
     if (keyName == "log-level"sv) {
-        
+
         setConfigValue<int64_t>(bool(this->logLevel), keyName, value, [this](const toml::value<int64_t> & val) {
             if (*val < 0)
                 throw ConfigFileError("log-level value must be greater or equal to 0", spdlog::level::err, val.source());
             auto decrease = unsigned(*val);
             setLogLevel(*this, decrease);
         });
-        
+
     } else if (keyName == "log-file"sv) {
-        
+
         setConfigValue<std::string>(bool(this->logFile), keyName, value, [this](const toml::value<std::string> & val) {
             setLogFile(*this, *val);
         });
-        
+
 #if HAVE_OS_LOG
 
     } else if (keyName == "log-os-log"sv) {
-        
+
         setConfigValue<bool>(bool(this->logToOsLog), keyName, value, [this](const toml::value<bool> & val) {
             setLogToOsLog(*this, *val);
         });
 #endif
 
     } else if (keyName == "pid-file"sv) {
-        
+
         setConfigValue<std::string>(bool(this->pidFile), keyName, value, [this](const toml::value<std::string> & val) {
             setPidFile(*this, *val);
         });
-        
+
     } else if (keyName == "user"sv) {
-        
+
         setConfigValue<std::string>(bool(this->runAs), keyName, value, [this](const toml::value<std::string> & val) {
             setRunAs(*this, *val);
         });
-        
+
     } else if (keyName == "chroot"sv) {
-        
+
         setConfigValue<std::string>(bool(this->chrootDir), keyName, value, [this](const toml::value<std::string> & val) {
             setChrootDir(*this, *val);
         });
-        
+
     } else {
         throw ConfigFileError(fmt::format("invalid key {}", keyName), spdlog::level::err, value.source());
     }
@@ -692,7 +692,7 @@ void CommandLine::parseConfigKey(std::string_view keyName, const toml::node & va
 
 template<class Expected, class Handler>
 void CommandLine::setConfigValue(bool isSet, std::string_view keyName, const toml::node & value, Handler handler) {
-    
+
     if (isSet) {
         auto & source = value.source();
         WSDLOG_WARN("{}, line {}: {} value is already set on command line, ignoring", *source.path, source.begin.line, keyName);
@@ -715,7 +715,7 @@ void CommandLine::setConfigValue(bool isSet, std::string_view keyName, const tom
 }
 
 void CommandLine::mergeConfigFile(const std::filesystem::path & path) {
- 
+
     std::error_code ec;
     auto file = ptl::FileDescriptor::open(path.c_str(), O_RDONLY, ec);
     if (ec) {
@@ -735,34 +735,34 @@ void CommandLine::mergeConfigFile(const std::filesystem::path & path) {
         WSDLOG_WARN("Cannot map config file {}, error: {}", path.c_str(), ec.message());
         return;
     }
-    
+
     try {
         auto cfg = toml::parse(std::string_view((const char *)content.data(), content.size()), path.string());
-        
+
         for (auto && [key, value] : cfg) {
-            
+
             try {
-                
+
                 parseConfigKey(key.str(), value);
-                
+
             } catch (CommandLine::ConfigFileError & ex) {
-                
+
                 auto & source = ex.source();
                 if (spdlog::should_log(ex.level))
                     spdlog::log(ex.level, "{}, line {}: {}, ignoring", *source.path, source.begin.line, ex.description());
-                
+
             } catch (toml::parse_error & ex) {
-                
+
                 auto & source = ex.source();
                 WSDLOG_ERROR("{}, line {}: {}, ignoring", *source.path, source.begin.line, ex.description());
-                
+
             } catch (Parser::ValidationError & ex) {
-                
+
                 auto & source = value.source();
                 WSDLOG_ERROR("{}, line {}: {}, ignoring", *source.path, source.begin.line, ex.message());
             }
         }
-        
+
     } catch (toml::parse_error & ex) {
         auto & source = ex.source();
         WSDLOG_ERROR("{}, line {}: {}", *source.path, source.begin.line, ex.description());

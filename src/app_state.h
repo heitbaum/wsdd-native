@@ -12,20 +12,20 @@
 class AppState {
 public:
     AppState(int argc, char ** argv, std::set<int> untouchedSignals);
-    
+
     void reload();
-    
+
     auto config() const -> const refcnt_ptr<Config> {
         return m_config;
     }
-    
+
     auto shouldFork() const -> bool {
         return m_currentCommandLine.chrootDir || m_currentCommandLine.runAs;
     }
-    
-    
+
+
     void preFork();
-    
+
     void postForkInServerProcess() noexcept;
 
     enum class DaemonStatus {
@@ -56,7 +56,7 @@ private:
     CommandLine m_currentCommandLine;
     pid_t m_mainPid;
     XmlParserInit m_xmlInit;
-    
+
     bool m_isInitialized = false;
     std::optional<spdlog::level::level_enum> m_logLevel;
     std::optional<std::filesystem::path> m_logFilePath;

@@ -66,7 +66,7 @@ private:
     ip::address m_remoteAddr;
     std::chrono::steady_clock::time_point m_startTime;
     sys_string m_connDesc;
-    
+
     HttpServerImpl * m_owner = nullptr;
     bool m_stopRequested = false;
     std::array<std::byte, 8192> m_readBuffer;
@@ -90,7 +90,7 @@ public:
         m_handler = &handler;
         accept();
     }
-    
+
     void stop() override {
         WSDLOG_INFO("{}: stopping server", m_serverDesc);
         m_handler = nullptr;
@@ -105,7 +105,7 @@ public:
     auto handleHttpRequest(std::unique_ptr<XmlDoc> doc) -> std::optional<XmlCharBuffer>;
     void onConnectionFinished(const refcnt_ptr<HttpConnection> & con);
 
-    auto serverDesc() const -> const sys_string & 
+    auto serverDesc() const -> const sys_string &
         { return m_serverDesc; }
 private:
     void accept();
@@ -126,7 +126,7 @@ private:
     std::set<refcnt_ptr<HttpConnection>> m_connections;
 };
 
-auto createHttpServer(asio::io_context & ctxt, 
+auto createHttpServer(asio::io_context & ctxt,
                       const refcnt_ptr<Config> & config,
                       const NetworkInterface & iface,
                       const ip::tcp::endpoint & endpoint) -> refcnt_ptr<HttpServer> {
@@ -160,10 +160,10 @@ void HttpServerImpl::accept() {
                 WSDLOG_ERROR("{}: error accepting: {}", m_serverDesc, ec.message());
                 m_handler->onFatalHttpError();
             }
-            
+
             return;
         }
-        
+
         handleConnection(std::move(socket));
         accept();
     });
@@ -172,7 +172,7 @@ void HttpServerImpl::accept() {
 void HttpServerImpl::handleConnection(ip::tcp::socket && socket) {
 
     bool wasEmpty = m_connections.empty();
-    
+
     auto remoteAddr = socket.remote_endpoint().address();
     size_t sameAddrCount = 0;
     refcnt_ptr<HttpConnection> oldestWithTheSameAddr;
@@ -208,7 +208,7 @@ void HttpServerImpl::scheduleGC() {
                 WSDLOG_ERROR("{}: error waiting for gc timer: {}", m_serverDesc, ec.message());
                 m_handler->onFatalHttpError();
             }
-            
+
             return;
         }
 
@@ -237,7 +237,7 @@ void HttpServerImpl::onConnectionFinished(const refcnt_ptr<HttpConnection> & con
 }
 
 auto HttpServerImpl::handleHttpRequest(std::unique_ptr<XmlDoc> doc) -> std::optional<XmlCharBuffer> {
-    
+
     if (m_handler)
         return m_handler->handleHttpRequest(std::move(doc));
     return std::nullopt;
@@ -257,18 +257,18 @@ void HttpConnection::stop() {
 }
 
 void HttpConnection::read() {
-    m_socket.async_read_some(asio::buffer(m_readBuffer), 
+    m_socket.async_read_some(asio::buffer(m_readBuffer),
         [this, holder = refcnt_retain(this)] (asio::error_code ec, size_t bytesRead) {
 
         if (!m_owner)
             return;
-        
+
         if (ec) {
             if (ec != asio::error::operation_aborted) {
                 WSDLOG_DEBUG("{}: error reading: {}", m_connDesc, ec.message());
                 m_owner->onConnectionFinished(holder);
             }
-            
+
             return;
         }
 
@@ -285,23 +285,23 @@ void HttpConnection::write(bool finalWrite)
 {
     asio::async_write(m_socket, m_response.makeBuffers(),
         [this, holder = refcnt_retain(this), finalWrite](asio::error_code ec, size_t) {
-        
+
         if (!m_owner)
             return;
-        
+
         if (ec) {
             if (ec != asio::error::operation_aborted) {
                 WSDLOG_DEBUG("{}: error writing: {}", m_connDesc, ec.message());
                 m_owner->onConnectionFinished(holder);
             }
-            
+
             return;
         }
 
         if (!finalWrite) {
             read();
             return;
-        } 
+        }
 
         asio::error_code ignore;
         m_socket.shutdown(ip::tcp::socket::shutdown_both, ignore);
@@ -332,14 +332,14 @@ auto HttpConnection::parseHeader(const std::byte * first, const std::byte * last
         m_response = HttpResponse::makeStockResponse(HttpResponse::BadRequest);
         return {ParseResult::Error, readEnd};
     }
-    
+
     if (res == HttpRequestParser::Indeterminate) {
         assert(readEnd == last);
         return {ParseResult::Continue, last};
     }
 
     WSDLOG_DEBUG("{}: {} {}", m_connDesc, m_request.method, m_request.uri);
-    
+
     if (m_request.method != S("POST") || m_request.uri != S("/") + m_config->httpPath()) {
         m_response = HttpResponse::makeStockResponse(HttpResponse::NotFound);
         return {ParseResult::Error, readEnd};
@@ -358,7 +358,7 @@ auto HttpConnection::parseHeader(const std::byte * first, const std::byte * last
         return {ParseResult::Error, readEnd};
     }
     m_contentRemaining = contentLength;
-    
+
 
     auto contentTypeRes = m_request.getContentType();
     if (!contentTypeRes) {
@@ -405,9 +405,9 @@ auto HttpConnection::parseBody(const std::byte * first, const std::byte * last) 
 
     size_t chunkSize = std::min(m_contentRemaining, size_t(last - first));
     m_contentRemaining -= chunkSize;
-    
+
     WSDLOG_TRACE("{}: received {}", m_connDesc, std::string_view((const char *)first, chunkSize));
-    
+
     try {
         //int cast is safe because our buffer is much much smaller than max int (8192 currently)
         m_contentParser->parseChunk((const uint8_t *)first, int(chunkSize), m_contentRemaining == 0);
@@ -417,7 +417,7 @@ auto HttpConnection::parseBody(const std::byte * first, const std::byte * last) 
         m_response = HttpResponse::makeStockResponse(HttpResponse::BadRequest);
         return {ParseResult::Error, first + chunkSize};
     }
-    
+
     if (m_contentRemaining == 0) {
         if (!m_contentParser->wellFormed()) {
             WSDLOG_INFO("{}: XML is not well formed", m_connDesc);

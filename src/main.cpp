@@ -26,9 +26,9 @@ static inline void unblockSignals() {
 }
 
 static auto waitForChild() -> std::optional<int> {
-    
+
     WSDLOG_INFO("Waiting for child");
-    
+
     auto oldSigInt = ptl::setSignalHandler(SIGINT, [](int) {
         assert(g_maybeChildProcess);
         (void)::kill(g_maybeChildProcess->get(), SIGINT);
@@ -42,9 +42,9 @@ static auto waitForChild() -> std::optional<int> {
         assert(g_maybeChildProcess);
         (void)::kill(g_maybeChildProcess->get(), SIGINT);
     });
-    
+
     unblockSignals();
-    
+
     int status = 0;
     for ( ; ; ) {
         ptl::AllowedErrors<EINTR> ec;
@@ -57,10 +57,10 @@ static auto waitForChild() -> std::optional<int> {
     ptl::setSignalHandler(SIGINT, oldSigInt);
     ptl::setSignalHandler(SIGTERM, oldSigTerm);
     ptl::setSignalHandler(SIGHUP, oldSigHup);
-    
+
     assert(!*g_maybeChildProcess);
     g_maybeChildProcess = std::nullopt;
-    
+
     if (WIFSIGNALED(status)) { //child exited by signal
         int termsig = WTERMSIG(status);
         if (termsig == SIGINT) {
@@ -70,7 +70,7 @@ static auto waitForChild() -> std::optional<int> {
         WSDLOG_INFO("Child killed by signal {} - exiting", ptl::signalName(termsig));
         return EXIT_FAILURE;
     }
-    
+
     if (int exitCode = WEXITSTATUS(status); exitCode != 0)  { //child exited with failure
         if (exitCode == EXIT_RELOAD) {
             WSDLOG_INFO("Child exited with EXIT_RELOAD");
@@ -80,25 +80,25 @@ static auto waitForChild() -> std::optional<int> {
         WSDLOG_INFO("Child exited with code {} - exiting", exitCode);
         return exitCode;
     }
-    
+
     WSDLOG_INFO("Child exited successfully");
     return std::nullopt;
 }
 
 
 static void serve(const refcnt_ptr<Config> & config, ptl::FileDescriptor * monitorDesc) {
-    
+
     static char dummyBuffer[1];
-    
+
     WSDLOG_INFO("Starting processing");
-    
+
     asio::io_context ctxt;
-    
+
     ServerManager serverManager(ctxt, config, createInterfaceMonitor, createHttpServer, createUdpServer);
-    
+
     std::shared_ptr<asio::readable_pipe> monitorPipe;
     asio::signal_set signals(ctxt, SIGINT, SIGTERM, SIGHUP);
-    
+
     signals.async_wait([&](const asio::error_code & ec, int signo){
         if (ec)
             throw std::system_error(ec, "async waiting for signal failed");
@@ -110,8 +110,8 @@ static void serve(const refcnt_ptr<Config> & config, ptl::FileDescriptor * monit
             g_reload = 1;
     });
     unblockSignals();
-    
-    
+
+
     if (monitorDesc) {
         monitorPipe = std::make_shared<asio::readable_pipe>(ctxt, monitorDesc->get());
         monitorDesc->detach();
@@ -122,81 +122,81 @@ static void serve(const refcnt_ptr<Config> & config, ptl::FileDescriptor * monit
             kill(getpid(), SIGINT);
         });
     }
-    
+
     serverManager.start();
-    
+
     ctxt.run();
-    
+
     WSDLOG_INFO("Stopped processing");
 }
 
 auto runServer(AppState & appState) -> int {
-    
+
     try {
         for ( ; ; ) {
-            
+
             ptl::Pipe monitorPipe;
-            
+
             blockSignals();
-            
+
             appState.reload();
             g_reload = 0;
-            
+
             if (appState.shouldFork()) {
-                
+
                 WSDLOG_INFO("Starting child");
-                
+
                 monitorPipe = ptl::Pipe::create();
-                
+
                 appState.preFork();
-                
+
                 g_maybeChildProcess = ptl::forkProcess();
             }
-            
+
             if (!g_maybeChildProcess) { //standalone
-                
+
                 appState.notify(AppState::DaemonStatus::Ready);
                 serve(appState.config(), nullptr);
-                
+
                 if (!g_reload) {
                     appState.notify(AppState::DaemonStatus::Stopping);
                     return EXIT_SUCCESS;
                 }
-                
+
             } else if (!*g_maybeChildProcess) { //child
 
             #if HAVE_OS_LOG
                 OsLogHandle::resetInChild();
             #endif
-                
+
                 WSDLOG_INFO("Child started");
-                
+
                 appState.postForkInServerProcess();
-                
+
                 monitorPipe.writeEnd.close();
-                                
+
                 serve(appState.config(), &monitorPipe.readEnd);
-                
+
                 return g_reload ? EXIT_RELOAD : EXIT_SUCCESS;
-                
+
             } else { //parent
-                
+
                 monitorPipe.readEnd.close();
-                
+
                 appState.notify(AppState::DaemonStatus::Ready);
                 if (auto res = waitForChild())
                     return *res;
-                
+
                 if (!g_reload) {
                     appState.notify(AppState::DaemonStatus::Stopping);
                     return EXIT_SUCCESS;
                 }
             }
-            
+
             appState.notify(AppState::DaemonStatus::Reloading);
             WSDLOG_INFO("Reloading configuration");
         }
-        
+
     } catch (std::exception & ex) {
         WSDLOG_ERROR("Exception: {}", ex.what());
         WSDLOG_ERROR("{}", formatCaughtExceptionBacktrace());
@@ -206,13 +206,13 @@ auto runServer(AppState & appState) -> int {
 
 
 int main(int argc, char * argv[]) {
-    
+
     try {
         g_controlSignals.add(SIGINT);
         g_controlSignals.add(SIGTERM);
         g_controlSignals.add(SIGHUP);
         blockSignals();
-        
+
         //set default handlers
         ptl::setSignalHandler(SIGINT, [](int) {
             exit(EXIT_SUCCESS);
@@ -221,13 +221,13 @@ int main(int argc, char * argv[]) {
             exit(EXIT_SUCCESS);
         });
         ptl::setSignalHandler(SIGHUP, SIG_IGN);
-                
+
         umask(S_IRWXG | S_IRWXO);
-        
+
         AppState appState(argc, argv, {SIGINT, SIGTERM, SIGHUP});
-        
+
         return runServer(appState);
-        
+
     } catch (std::exception & ex) {
         fmt::print(stderr, "Exception: {}\n", ex.what());
         fmt::print(stderr, "{}", formatCaughtExceptionBacktrace());

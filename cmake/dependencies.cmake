@@ -4,7 +4,7 @@
 include(FetchContent)
 
 if (DEFINED CACHE{libxml2_SOURCE_DIR} AND NOT DEFINED CACHE{WSDDN_DEPENDENCIES_VERSION})
-    message(FATAL_ERROR 
+    message(FATAL_ERROR
     "Your existing CMake cache cannot be used due to incompatible changes."
     "Please delete ${CMAKE_BINARY_DIR}/CMakeCache.txt and rebuild. (sorry!)")
 endif()
@@ -34,7 +34,7 @@ function(fetch_dependency name #extras for FetchContent_Declare
     string(REPLACE "\$\{version\}" ${version} url "${url}")
     string(TOUPPER ${name} uname)
     string(TOLOWER ${name} lname)
-    
+
     set(extras "")
     foreach(i RANGE 1 ${ARGC})
         list(APPEND extras ${ARGV${i}})
@@ -45,13 +45,13 @@ function(fetch_dependency name #extras for FetchContent_Declare
     else()
         set(old_prefer 0)
     endif()
-    
+
     if (WSDDN_PREFER_SYSTEM_${uname})
         set(new_prefer 1)
     else()
         set(new_prefer 0)
     endif()
-    
+
     if (NOT ${new_prefer} EQUAL ${old_prefer})
         unset(${lname}_POPULATED CACHE)
         unset(${lname}_SOURCE_DIR CACHE)
